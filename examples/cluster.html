@@ -8,6 +8,9 @@ tags: "cluster, vector"
 ---
 <div id="map" class="map"></div>
 <form>
-  <label for="distance">cluster distance</label>
-  <input id="distance" type="range" min="0" max="100" step="1" value="40"/>
+  <label>Randomize: <input type="checkbox" id="randomize"/></label>
+  <label for="distance">cluster distance: <span id="distance-info"></span> px</label>
+  <label for="factor">Center interpolation: <span id="factor-info"></span></label>
+  <input id="distance" type="range" min="0" max="200" step="1" value="60"/>
+  <input id="factor" type="range" min="0" max="100" step="1" value="100"/>
 </form>

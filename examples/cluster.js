@@ -10,10 +10,15 @@ import {
   Text,
 } from '../src/ol/style.js';
 import {Cluster, OSM, Vector as VectorSource} from '../src/ol/source.js';
+import {Polygon} from '../src/ol/geom.js';
 import {Tile as TileLayer, Vector as VectorLayer} from '../src/ol/layer.js';
 import {boundingExtent} from '../src/ol/extent.js';
 
 const distance = document.getElementById('distance');
+const distanceInfo = document.getElementById('distance-info');
+const factor = document.getElementById('factor');
+const factorInfo = document.getElementById('factor-info');
+const randomize = document.getElementById('randomize');
 
 const count = 20000;
 const features = new Array(count);
@@ -27,15 +32,29 @@ const source = new VectorSource({
   features: features,
 });
 
+distanceInfo.innerText = distance.value;
+factorInfo.innerText = parseInt(factor.value, 10) / 100;
 const clusterSource = new Cluster({
   distance: parseInt(distance.value, 10),
   source: source,
+  factor: parseInt(factor.value, 10) / 100,
+  randomize: randomize.checked,
 });
+let hoverFeature = null;
 
+const circle = new CircleStyle({
+  radius: 1,
+  fill: new Fill({
+    color: 'red',
+  }),
+});
 const styleCache = {};
 const clusters = new VectorLayer({
   source: clusterSource,
   style: function (feature) {
+    if (feature.get('hidden')) {
+      return null;
+    }
     const size = feature.get('features').length;
     let style = styleCache[size];
     if (!style) {
@@ -58,7 +77,45 @@ const clusters = new VectorLayer({
       });
       styleCache[size] = style;
     }
-    return style;
+    let rect = feature.get('rect');
+    const meta = feature.get('meta');
+    const rgb = [255 * meta.order, 255 * meta.order, 255 * meta.order].join(
+      ','
+    );
+    if (!rect) {
+      rect = new Style({
+        geometry: meta.searchRect,
+        stroke: new Stroke({
+          width: 2,
+          color: 'rgba(' + rgb + ', 1)',
+        }),
+        fill: new Fill({
+          color:
+            'rgba(' +
+            rgb +
+            ', ' +
+            (feature === hoverFeature ? 0.3 : 0.01) +
+            ')',
+        }),
+      });
+      feature.set('rect', rect);
+    }
+    rect
+      .getFill()
+      .setColor(
+        'rgba(' + rgb + ', ' + (feature === hoverFeature ? 0.3 : 0.01) + ')'
+      );
+    if (feature === hoverFeature) {
+      const points = feature.get('features').map(function (feature) {
+        return new Style({
+          geometry: feature.getGeometry(),
+          image: circle,
+        });
+      });
+      points.unshift(rect, style);
+      return points;
+    }
+    return [rect, style];
   },
 });
 
@@ -67,7 +124,32 @@ const raster = new TileLayer({
 });
 
 const map = new Map({
-  layers: [raster, clusters],
+  layers: [
+    raster,
+    new VectorLayer({
+      source: new VectorSource({
+        features: [
+          new Feature({
+            geometry: new Polygon([
+              [
+                [e, e],
+                [e, -e],
+                [-e, -e],
+                [-e, e],
+                [e, e],
+              ],
+            ]),
+          }),
+        ],
+      }),
+      style: new Style({
+        fill: new Fill({
+          color: 'rgba(0, 255, 0, .2)',
+        }),
+      }),
+    }),
+    clusters,
+  ],
   target: 'map',
   view: new View({
     center: [0, 0],
@@ -75,7 +157,31 @@ const map = new Map({
   }),
 });
 
+map.on('click', function (evt) {
+  map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+    feature.set('hidden', true);
+    map.once('postrender', function () {
+      onPointerMove(evt);
+    });
+    return true;
+  });
+});
+function onPointerMove(evt) {
+  hoverFeature = null;
+  const newHoverFeature = map.forEachFeatureAtPixel(evt.pixel, function (
+    feature
+  ) {
+    return feature;
+  });
+  if (newHoverFeature !== hoverFeature) {
+    hoverFeature = newHoverFeature;
+    clusters.changed();
+  }
+}
+map.on('pointermove', onPointerMove);
+
 distance.addEventListener('input', function () {
+  distanceInfo.innerText = distance.value;
   clusterSource.setDistance(parseInt(distance.value, 10));
 });
 
@@ -92,4 +198,13 @@ map.on('click', (e) => {
       }
     }
   });
+});
+factor.addEventListener('input', function () {
+  const val = parseInt(factor.value, 10) / 100;
+  factorInfo.innerText = val;
+  clusterSource.updateFactor(val);
+  clusters.changed();
+});
+randomize.addEventListener('change', function () {
+  clusterSource.setRandomize(randomize.checked);
 });

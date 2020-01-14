@@ -9,8 +9,15 @@ import Point from '../geom/Point.js';
 import VectorSource from './Vector.js';
 import {add as addCoordinate, scale as scaleCoordinate} from '../coordinate.js';
 import {assert} from '../asserts.js';
-import {buffer, createEmpty, createOrUpdateFromCoordinate} from '../extent.js';
+import {
+  buffer,
+  createEmpty,
+  createOrUpdateFromCoordinate,
+  getCenter,
+} from '../extent.js';
+import {clamp} from '../math.js';
 import {getUid} from '../util.js';
+import {fromExtent as polygonFromExtent} from '../geom/Polygon.js';
 
 /**
  * @typedef {Object} Options
@@ -31,6 +38,9 @@ import {getUid} from '../util.js';
  * calculation point for polygons.
  * @property {VectorSource} [source] Source.
  * @property {boolean} [wrapX=true] Whether to wrap the world horizontally.
+ * @property {number} [factor=1] Position of cluster source at center point of all feature
+ * coordinates at 1. A the center of the searched rect when 0.
+ * @property {boolean} [randomize=false] Randomize the order in which features are added to clusters.
  */
 
 /**
@@ -86,6 +96,11 @@ class Cluster extends VectorSource {
       };
 
     this.boundRefresh_ = this.refresh.bind(this);
+
+    this.factor = options.factor === undefined ? 1 : options.factor;
+
+    this.randomize =
+      options.randomize === undefined ? false : options.randomize;
 
     this.setSource(options.source || null);
   }
@@ -143,6 +158,31 @@ class Cluster extends VectorSource {
     this.refresh();
   }
 
+  updateFactor(factor) {
+    this.factor = clamp(factor, 0, 1);
+    this.applyFactor();
+  }
+
+  applyFactor() {
+    const factor = this.factor;
+    this.features.forEach(function (feature) {
+      const meta = feature.get('meta');
+      const point = [
+        meta.centroid[0] * factor + meta.searchCenter[0] * (1 - factor),
+        meta.centroid[1] * factor + meta.searchCenter[1] * (1 - factor),
+      ];
+      feature.setGeometry(new Point(point));
+    });
+  }
+
+  setRandomize(randomize) {
+    const old = this.randomize;
+    this.randomize = randomize;
+    if (old !== randomize) {
+      this.refresh();
+    }
+  }
+
   /**
    * Replace the wrapped source.
    * @param {VectorSource} source The new source for this instance.
@@ -179,8 +219,17 @@ class Cluster extends VectorSource {
     const mapDistance = this.distance * this.resolution;
     const features = this.source.getFeatures();
 
+    if (this.randomize) {
+      for (let i = 0, ii = features.length; i < ii; ++i) {
+        const idx = Math.floor(Math.random() * ii);
+        const feature = features[i];
+        features[i] = features[idx];
+        features[idx] = feature;
+      }
+    }
+
     /**
-     * @type {!Object<string, boolean>}
+     * @type {Object<string, true>}
      */
     const clustered = {};
 
@@ -196,25 +245,35 @@ class Cluster extends VectorSource {
           let neighbors = this.source.getFeaturesInExtent(extent);
           neighbors = neighbors.filter(function (neighbor) {
             const uid = getUid(neighbor);
-            if (!(uid in clustered)) {
-              clustered[uid] = true;
-              return true;
-            } else {
+            if (uid in clustered) {
               return false;
             }
+            clustered[uid] = true;
+            return true;
           });
-          this.features.push(this.createCluster(neighbors));
+          const cluster = this.createCluster(neighbors, extent);
+          this.features.push(cluster);
         }
       }
     }
+    if (this.features.length === 1) {
+      this.features[0].get('meta').order = 0;
+    } else {
+      const max = this.features.length - 1;
+      this.features.forEach(function (cluster, idx) {
+        cluster.get('meta').order = idx / max;
+      });
+    }
+    this.applyFactor();
   }
 
   /**
    * @param {Array<Feature>} features Features
+   * @param {Array<number>} extent The search rect for this cluster feature.
    * @return {Feature} The cluster feature.
    * @protected
    */
-  createCluster(features) {
+  createCluster(features, extent) {
     const centroid = [0, 0];
     for (let i = features.length - 1; i >= 0; --i) {
       const geometry = this.geometryFunction(features[i]);
@@ -225,9 +284,15 @@ class Cluster extends VectorSource {
       }
     }
     scaleCoordinate(centroid, 1 / features.length);
-
-    const cluster = new Feature(new Point(centroid));
-    cluster.set('features', features);
+    const searchCenter = getCenter(extent);
+    const cluster = new Feature({
+      features: features,
+      meta: {
+        centroid: centroid,
+        searchCenter: searchCenter,
+        searchRect: polygonFromExtent(extent),
+      },
+    });
     return cluster;
   }
 }
