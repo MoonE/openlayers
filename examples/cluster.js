@@ -110,6 +110,7 @@ const clusters = new VectorLayer({
         return new Style({
           geometry: feature.getGeometry(),
           image: circle,
+          zIndex: 100,
         });
       });
       points.unshift(rect, style);
