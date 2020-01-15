@@ -48,7 +48,25 @@ const circle = new CircleStyle({
     color: 'red',
   }),
 });
+
+function createRectStyle(geometry, order, fill) {
+  const rgb = [255 * order, 255 * order, 255 * order].join(',');
+  return new Style({
+    geometry: geometry,
+    stroke: new Stroke({
+      width: 2,
+      color: 'rgba(' + rgb + ', 1)',
+    }),
+    fill: new Fill({
+      color: 'rgba(' + rgb + ', ' + fill + ')',
+    }),
+  });
+}
 const styleCache = {};
+const textFill = new Fill({color: '#fff'});
+const markerFill = new Fill({color: '#3399CC'});
+const markerStroke = new Stroke({color: '#fff'});
+
 const clusters = new VectorLayer({
   source: clusterSource,
   style: function (feature) {
@@ -61,62 +79,38 @@ const clusters = new VectorLayer({
       style = new Style({
         image: new CircleStyle({
           radius: 10,
-          stroke: new Stroke({
-            color: '#fff',
-          }),
-          fill: new Fill({
-            color: '#3399CC',
-          }),
+          stroke: markerStroke,
+          fill: markerFill,
         }),
         text: new Text({
           text: size.toString(),
-          fill: new Fill({
-            color: '#fff',
-          }),
+          fill: textFill,
         }),
       });
       styleCache[size] = style;
     }
-    let rect = feature.get('rect');
     const meta = feature.get('meta');
-    const rgb = [255 * meta.order, 255 * meta.order, 255 * meta.order].join(
-      ','
-    );
-    if (!rect) {
-      rect = new Style({
-        geometry: meta.searchRect,
-        stroke: new Stroke({
-          width: 2,
-          color: 'rgba(' + rgb + ', 1)',
-        }),
-        fill: new Fill({
-          color:
-            'rgba(' +
-            rgb +
-            ', ' +
-            (feature === hoverFeature ? 0.3 : 0.01) +
-            ')',
-        }),
-      });
-      feature.set('rect', rect);
-    }
-    rect
-      .getFill()
-      .setColor(
-        'rgba(' + rgb + ', ' + (feature === hoverFeature ? 0.3 : 0.01) + ')'
-      );
     if (feature === hoverFeature) {
-      const points = feature.get('features').map(function (feature) {
-        return new Style({
-          geometry: feature.getGeometry(),
-          image: circle,
-          zIndex: 100,
+      if (!meta.subStyle) {
+        const rect = createRectStyle(meta.searchRect, meta.order, 0.3);
+        meta.subStyle = feature.get('features').map(function (feature) {
+          return new Style({
+            geometry: feature.getGeometry(),
+            image: circle,
+            zIndex: 100,
+          });
         });
-      });
-      points.unshift(rect, style);
-      return points;
+        meta.subStyle.unshift(rect, style);
+      }
+      return meta.subStyle;
     }
-    return [rect, style];
+    if (!meta.rectStyle) {
+      meta.rectStyle = [
+        createRectStyle(meta.searchRect, meta.order, 0.01),
+        style,
+      ];
+    }
+    return meta.rectStyle;
   },
 });
 
