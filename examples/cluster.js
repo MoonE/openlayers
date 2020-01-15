@@ -49,17 +49,23 @@ const circle = new CircleStyle({
   }),
 });
 
-function createRectStyle(geometry, order, fill) {
-  const rgb = [255 * order, 255 * order, 255 * order].join(',');
+function createRectStyle(geometry, opts) {
   return new Style({
     geometry: geometry,
-    stroke: new Stroke({
-      width: 2,
-      color: 'rgba(' + rgb + ', 1)',
-    }),
-    fill: new Fill({
-      color: 'rgba(' + rgb + ', ' + fill + ')',
-    }),
+    stroke: opts.order
+      ? new Stroke({
+          width: 2,
+          color:
+            'rgb(' +
+            [255 * opts.order, 255 * opts.order, 255 * opts.order].join(',') +
+            ')',
+        })
+      : undefined,
+    fill: opts.fill
+      ? new Fill({
+          color: 'rgba(0, 0, 0, ' + opts.fill + ')',
+        })
+      : undefined,
   });
 }
 const styleCache = {};
@@ -92,7 +98,11 @@ const clusters = new VectorLayer({
     const meta = feature.get('meta');
     if (feature === hoverFeature) {
       if (!meta.subStyle) {
-        const rect = createRectStyle(meta.searchRect, meta.order, 0.3);
+        const rectFill = createRectStyle(meta.searchRect, {fill: 0.25});
+        const rectStroke = createRectStyle(meta.searchRect, {
+          order: meta.order,
+        });
+        rectStroke.setZIndex(50);
         meta.subStyle = feature.get('features').map(function (feature) {
           return new Style({
             geometry: feature.getGeometry(),
@@ -100,13 +110,15 @@ const clusters = new VectorLayer({
             zIndex: 100,
           });
         });
-        meta.subStyle.unshift(rect, style);
+        style = style.clone();
+        style.setZIndex(10);
+        meta.subStyle.unshift(rectFill, style, rectStroke);
       }
       return meta.subStyle;
     }
     if (!meta.rectStyle) {
       meta.rectStyle = [
-        createRectStyle(meta.searchRect, meta.order, 0.01),
+        createRectStyle(meta.searchRect, {order: meta.order, fill: 0.01}),
         style,
       ];
     }
