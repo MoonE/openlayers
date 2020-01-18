@@ -52,15 +52,16 @@ const circle = new CircleStyle({
 function createRectStyle(geometry, opts) {
   return new Style({
     geometry: geometry,
-    stroke: opts.order
-      ? new Stroke({
-          width: 2,
-          color:
-            'rgb(' +
-            [255 * opts.order, 255 * opts.order, 255 * opts.order].join(',') +
-            ')',
-        })
-      : undefined,
+    stroke:
+      opts.order !== undefined
+        ? new Stroke({
+            width: 2,
+            color:
+              'rgb(' +
+              [255 * opts.order, 255 * opts.order, 255 * opts.order].join(',') +
+              ')',
+          })
+        : undefined,
     fill: opts.fill
       ? new Fill({
           color: 'rgba(0, 0, 0, ' + opts.fill + ')',
