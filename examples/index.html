@@ -85,11 +85,10 @@
       }
 
       var timerId;
-      function inputChange() {
+      function inputChange(text) {
         if (timerId) {
           window.clearTimeout(timerId);
         }
-        var text = this.value;
         timerId = window.setTimeout(function() {
           filterList(text);
         }, 500);
@@ -164,7 +163,7 @@
         listExamples(examples);
       }
 
-      function parseQuery() {
+      function parseParams() {
         var params = {};
         var list = window.location.search.substring(1).replace(/\+/g, '%20').split("&");
         for (var i = 0; i < list.length; ++i) {
@@ -173,23 +172,32 @@
             params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
           }
         }
-        if (params["q"]) {
-          var input = document.getElementById("keywords");
-          input.value = params["q"];
-          inputChange.call(input);
-        }
+        return params;
       }
 
-      window.onload = function() {
-        for (var i = 0; i < info.examples.length; ++i) {
-          info.examples[i].link += window.location.search;
+      window.addEventListener('load', function() {
+        var search = window.location.search;
+        if (search) {
+          for (var i = 0; i < info.examples.length; ++i) {
+            info.examples[i].link += search;
+          }
         }
         template = new jugl.Template("template");
         target = document.getElementById("examples");
-        listExamples(info.examples);
-        document.getElementById("keywords").onkeyup = inputChange;
-        parseQuery();
-      };
+
+        var input = document.getElementById("keywords");
+        input.addEventListener('input', function () {
+          inputChange(this.value);
+        });
+        var params = parseParams();
+        var query = params["q"];
+        if (query) {
+          input.value = query;
+          filterList(query);
+        } else {
+          listExamples(info.examples);
+        }
+      });
 
     </script>
 
