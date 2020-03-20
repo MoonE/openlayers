@@ -19,6 +19,7 @@ const distanceInfo = document.getElementById('distance-info');
 const factor = document.getElementById('factor');
 const factorInfo = document.getElementById('factor-info');
 const randomize = document.getElementById('randomize');
+const numClusters = document.getElementById('num-clusters');
 
 const count = 20000;
 const features = new Array(count);
@@ -39,6 +40,9 @@ const clusterSource = new Cluster({
   source: source,
   factor: parseInt(factor.value, 10) / 100,
   randomize: randomize.checked,
+});
+clusterSource.on('change', function (evt) {
+  numClusters.innerText = evt.target.features.length;
 });
 let hoverFeature = null;
 
