@@ -1565,8 +1565,8 @@ class View extends BaseObject {
   getConstrainedResolution(targetResolution, opt_direction) {
     const direction = opt_direction || 0;
     const size = this.getViewportSize_(this.getRotation());
-
-    return this.constraints_.resolution(targetResolution, direction, size);
+    const resolution = this.constraints_.resolution(targetResolution, direction, size);
+    return clamp(resolution, this.minResolution_, this.maxResolution_);
   }
 }
 
