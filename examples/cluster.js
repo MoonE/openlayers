@@ -192,9 +192,16 @@ function onPointerMove(evt) {
 }
 map.on('pointermove', onPointerMove);
 
+let distKey;
 distance.addEventListener('input', function () {
   distanceInfo.innerText = distance.value;
-  clusterSource.setDistance(parseInt(distance.value, 10));
+  if (!distKey) {
+    distKey = map.once('precompose', function () {
+      distKey = undefined;
+      clusterSource.setDistance(parseInt(distance.value, 10));
+    });
+    map.render();
+  }
 });
 
 map.on('click', (e) => {
@@ -211,11 +218,18 @@ map.on('click', (e) => {
     }
   });
 });
+
+let factorKey;
 factor.addEventListener('input', function () {
-  const val = parseInt(factor.value, 10) / 100;
-  factorInfo.innerText = val;
-  clusterSource.updateFactor(val);
-  clusters.changed();
+  factorInfo.innerText = factor.value;
+  if (!factorKey) {
+    factorKey = map.once('precompose', function () {
+      factorKey = undefined;
+      const val = parseInt(factor.value, 10) / 100;
+      clusterSource.updateFactor(val);
+    });
+    map.render();
+  }
 });
 randomize.addEventListener('change', function () {
   clusterSource.setRandomize(randomize.checked);

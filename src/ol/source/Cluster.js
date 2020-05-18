@@ -173,6 +173,7 @@ class Cluster extends VectorSource {
       ];
       feature.setGeometry(new Point(point));
     });
+    this.changed();
   }
 
   setRandomize(randomize) {
