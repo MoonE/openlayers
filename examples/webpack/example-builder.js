@@ -197,10 +197,10 @@ class ExampleBuilder {
     data.filename = htmlName;
 
     // process tags
-    if (data.tags) {
-      data.tags = data.tags.replace(/[\s"]+/g, '').split(',');
-    } else {
+    if (!('tags' in data)) {
       data.tags = [];
+    } else if (!Array.isArray(data.tags)) {
+      throw new Error(`'tags' should be an array in: ${htmlName}`);
     }
 
     // add in script tag
