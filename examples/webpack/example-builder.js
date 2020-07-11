@@ -200,7 +200,9 @@ class ExampleBuilder {
     // process tags
     if (!('tags' in data)) {
       data.tags = [];
-    } else if (!Array.isArray(data.tags)) {
+    } else if (Array.isArray(data.tags)) {
+      data.tags = data.tags.map((tag) => tag.replace(/ +/g, '-'));
+    } else {
       throw new Error(`'tags' should be an array in: ${htmlName}`);
     }
 
