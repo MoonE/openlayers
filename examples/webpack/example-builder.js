@@ -42,14 +42,15 @@ function createWordIndex(exampleData) {
   const keys = ['shortdesc', 'title', 'tags'];
   exampleData.forEach((data, i) => {
     keys.forEach((key) => {
-      let text = data[key];
+      let text = data[key] || '';
       if (Array.isArray(text)) {
         text = text.join(' ');
       }
-      const words = text ? text.split(/\W+/) : [];
+      const words = text
+        .toLowerCase()
+        .split(/[ '".!?;:{},()<>/`+=^[\]*|%&—'\\~…-]+/);
       words.forEach((word) => {
         if (word) {
-          word = word.toLowerCase();
           let counts = index[word];
           if (counts) {
             if (index in counts) {

@@ -95,13 +95,14 @@
       }
 
       function getMatchingExamples(text) {
+        text = text.trim();
         if (text.length < 2) {
           return info.examples;
         }
-        var words = text.split(/\W+/);
+        var words = text.toLowerCase().split(/ +/);
         var scores = {};
         for(var i=0; i<words.length; ++i) {
-          var word = words[i].toLowerCase();
+          var word = words[i];
           var dict = info.index[word];
           var updateScores = function() {
             for(exIndex in dict) {
