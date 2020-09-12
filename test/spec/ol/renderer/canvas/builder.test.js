@@ -467,11 +467,11 @@ describe('ol.render.canvas.Builder', function () {
     it('includes outside segments that change relationship', function () {
       const flat = [0, 0, 0, 200, 200, 200, 250, 200];
       replay.appendFlatLineCoordinates(flat, 0, flat.length, 2, false, false);
-      expect(replay.coordinates).to.eql([0, 0, 0, 200, 200, 200]);
+      expect(replay.coordinates).to.eql([0, 0, 0, 200]);
     });
 
     it('includes outside polygon segments that change relationship when on last segment', function () {
-      const flat = [0, 0, 0, 200, 200, 200, 250, 200, 0, 0];
+      const flat = [0, 0, 0, 200, 250, 200, 0, 0];
       replay.appendFlatLineCoordinates(flat, 0, flat.length, 2, true, false);
       expect(replay.coordinates).to.eql(flat);
     });

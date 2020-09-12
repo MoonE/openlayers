@@ -195,20 +195,17 @@ class CanvasBuilder extends VectorContext {
     const nextCoord = this.tmpCoordinate_;
     let skipped = true;
 
-    let i, lastRel, nextRel;
+    let lastRel = Relationship.UNKNOWN;
+    let nextRel, i;
     for (i = offset + stride; i < end; i += stride) {
       nextCoord[0] = flatCoordinates[i];
       nextCoord[1] = flatCoordinates[i + 1];
       nextRel = coordinateRelationship(extent, nextCoord);
-      if (nextRel !== lastRel) {
+      if (nextRel === Relationship.INTERSECTING || !(nextRel & lastRel)) {
         if (skipped) {
           coordinates[myEnd++] = lastXCoord;
           coordinates[myEnd++] = lastYCoord;
-          skipped = false;
         }
-        coordinates[myEnd++] = nextCoord[0];
-        coordinates[myEnd++] = nextCoord[1];
-      } else if (nextRel === Relationship.INTERSECTING) {
         coordinates[myEnd++] = nextCoord[0];
         coordinates[myEnd++] = nextCoord[1];
         skipped = false;
