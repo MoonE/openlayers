@@ -68,6 +68,7 @@ const createTextStyle = function (feature, resolution, values) {
     maxAngle: maxAngle,
     overflow: overflow,
     rotation: rotation,
+    scale: [Number(values.scaleX) || 1, Number(values.scaleY) || 1],
   });
 };
 
@@ -130,6 +131,8 @@ class Example {
       'overflow',
       'placement',
       'rotation',
+      'scale-x',
+      'scale-y',
       'size',
       'text',
       'weight',

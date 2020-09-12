@@ -19,3 +19,9 @@
 .edit-form-elem select {
   width: 130px;
 }
+.edit-form-elem .half-width {
+  width: 62px;
+}
+.edit-form-elem .half-width:not(:last-child) {
+  margin-right: 6px;
+}
