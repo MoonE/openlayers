@@ -13,66 +13,9 @@ import {Tile as TileLayer, Vector as VectorLayer} from '../src/ol/layer.js';
 
 let openSansAdded = false;
 
-const myDom = {
-  points: {
-    text: document.getElementById('points-text'),
-    align: document.getElementById('points-align'),
-    baseline: document.getElementById('points-baseline'),
-    rotation: document.getElementById('points-rotation'),
-    font: document.getElementById('points-font'),
-    weight: document.getElementById('points-weight'),
-    size: document.getElementById('points-size'),
-    height: document.getElementById('points-height'),
-    offsetX: document.getElementById('points-offset-x'),
-    offsetY: document.getElementById('points-offset-y'),
-    color: document.getElementById('points-color'),
-    outline: document.getElementById('points-outline'),
-    outlineWidth: document.getElementById('points-outline-width'),
-    maxreso: document.getElementById('points-maxreso'),
-  },
-  lines: {
-    text: document.getElementById('lines-text'),
-    align: document.getElementById('lines-align'),
-    baseline: document.getElementById('lines-baseline'),
-    rotation: document.getElementById('lines-rotation'),
-    font: document.getElementById('lines-font'),
-    weight: document.getElementById('lines-weight'),
-    placement: document.getElementById('lines-placement'),
-    maxangle: document.getElementById('lines-maxangle'),
-    overflow: document.getElementById('lines-overflow'),
-    size: document.getElementById('lines-size'),
-    height: document.getElementById('lines-height'),
-    offsetX: document.getElementById('lines-offset-x'),
-    offsetY: document.getElementById('lines-offset-y'),
-    color: document.getElementById('lines-color'),
-    outline: document.getElementById('lines-outline'),
-    outlineWidth: document.getElementById('lines-outline-width'),
-    maxreso: document.getElementById('lines-maxreso'),
-  },
-  polygons: {
-    text: document.getElementById('polygons-text'),
-    align: document.getElementById('polygons-align'),
-    baseline: document.getElementById('polygons-baseline'),
-    rotation: document.getElementById('polygons-rotation'),
-    font: document.getElementById('polygons-font'),
-    weight: document.getElementById('polygons-weight'),
-    placement: document.getElementById('polygons-placement'),
-    maxangle: document.getElementById('polygons-maxangle'),
-    overflow: document.getElementById('polygons-overflow'),
-    size: document.getElementById('polygons-size'),
-    height: document.getElementById('polygons-height'),
-    offsetX: document.getElementById('polygons-offset-x'),
-    offsetY: document.getElementById('polygons-offset-y'),
-    color: document.getElementById('polygons-color'),
-    outline: document.getElementById('polygons-outline'),
-    outlineWidth: document.getElementById('polygons-outline-width'),
-    maxreso: document.getElementById('polygons-maxreso'),
-  },
-};
-
-const getText = function (feature, resolution, dom) {
-  const type = dom.text.value;
-  const maxResolution = dom.maxreso.value;
+const getText = function (feature, resolution, values) {
+  const type = values.text;
+  const maxResolution = Number.parseFloat(values.maxResolution);
   let text = feature.get('name');
 
   if (resolution > maxResolution) {
@@ -81,45 +24,42 @@ const getText = function (feature, resolution, dom) {
     text = '';
   } else if (type == 'shorten') {
     text = text.trunc(12);
-  } else if (
-    type == 'wrap' &&
-    (!dom.placement || dom.placement.value != 'line')
-  ) {
+  } else if (type == 'wrap' && values.placement != 'line') {
     text = stringDivider(text, 16, '\n');
   }
 
   return text;
 };
 
-const createTextStyle = function (feature, resolution, dom) {
-  const align = dom.align.value;
-  const baseline = dom.baseline.value;
-  const size = dom.size.value;
-  const height = dom.height.value;
-  const offsetX = parseInt(dom.offsetX.value, 10);
-  const offsetY = parseInt(dom.offsetY.value, 10);
-  const weight = dom.weight.value;
-  const placement = dom.placement ? dom.placement.value : undefined;
-  const maxAngle = dom.maxangle ? parseFloat(dom.maxangle.value) : undefined;
-  const overflow = dom.overflow ? dom.overflow.value == 'true' : undefined;
-  const rotation = parseFloat(dom.rotation.value);
-  if (dom.font.value == "'Open Sans'" && !openSansAdded) {
+const createTextStyle = function (feature, resolution, values) {
+  const align = values.align;
+  const baseline = values.baseline;
+  const size = values.size;
+  const height = values.height;
+  const offsetX = Number(values.offsetX);
+  const offsetY = Number(values.offsetY);
+  const weight = values.weight;
+  const placement = values.placement;
+  const maxAngle = Number.parseFloat(values.maxAngle);
+  const overflow = values.overflow == 'true';
+  const rotation = Number.parseFloat(values.rotation);
+  if (values.font == "'Open Sans'" && !openSansAdded) {
     const openSans = document.createElement('link');
     openSans.href = 'https://fonts.googleapis.com/css?family=Open+Sans';
     openSans.rel = 'stylesheet';
     document.getElementsByTagName('head')[0].appendChild(openSans);
     openSansAdded = true;
   }
-  const font = weight + ' ' + size + '/' + height + ' ' + dom.font.value;
-  const fillColor = dom.color.value;
-  const outlineColor = dom.outline.value;
-  const outlineWidth = parseInt(dom.outlineWidth.value, 10);
+  const font = weight + ' ' + size + '/' + height + ' ' + values.font;
+  const fillColor = values.color;
+  const outlineColor = values.outline;
+  const outlineWidth = Number(values.outlineWidth);
 
   return new Text({
     textAlign: align == '' ? undefined : align,
     textBaseline: baseline,
     font: font,
-    text: getText(feature, resolution, dom),
+    text: getText(feature, resolution, values),
     fill: new Fill({color: fillColor}),
     stroke: new Stroke({color: outlineColor, width: outlineWidth}),
     offsetX: offsetX,
@@ -131,75 +71,140 @@ const createTextStyle = function (feature, resolution, dom) {
   });
 };
 
-// Polygons
-function polygonStyleFunction(feature, resolution) {
-  return new Style({
-    stroke: new Stroke({
-      color: 'blue',
-      width: 1,
-    }),
-    fill: new Fill({
-      color: 'rgba(0, 0, 255, 0.1)',
-    }),
-    text: createTextStyle(feature, resolution, myDom.polygons),
-  });
+class Example {
+  constructor(geometryType) {
+    this.nodeList = this.createNodeList(geometryType);
+    this.layer = this.createLayer(geometryType);
+    this.layer.setStyle(this.createStyleFunction(this.readInputValues()));
+    this.listenForInputChange();
+  }
+
+  listenForInputChange() {
+    const boundInputChange = function () {
+      this.layer.setStyle(this.createStyleFunction(this.readInputValues()));
+    }.bind(this);
+    this.nodeList.forEach(function (item) {
+      item.node.addEventListener('input', boundInputChange);
+    });
+  }
+
+  readInputValues() {
+    return this.nodeList.reduce(function (values, item) {
+      values[item.name] = item.node.value;
+      return values;
+    }, {});
+  }
+
+  createStyleFunction(values) {
+    return function () {
+      return null;
+    };
+  }
+
+  createLayer(geometryType) {
+    return new VectorLayer({
+      source: new VectorSource({
+        url: `data/geojson/${geometryType}-samples.geojson`,
+        format: new GeoJSON(),
+      }),
+    });
+  }
+
+  getLayer() {
+    return this.layer;
+  }
+
+  createNodeList(geometryType) {
+    return [
+      'align',
+      'baseline',
+      'color',
+      'font',
+      'height',
+      'max-angle',
+      'max-resolution',
+      'offset-x',
+      'offset-y',
+      'outline-width',
+      'outline',
+      'overflow',
+      'placement',
+      'rotation',
+      'size',
+      'text',
+      'weight',
+    ].map(function (type) {
+      return {
+        node: document.getElementById(geometryType + 's-' + type),
+        name: toCamelCase(type),
+      };
+    });
+  }
 }
 
-const vectorPolygons = new VectorLayer({
-  source: new VectorSource({
-    url: 'data/geojson/polygon-samples.geojson',
-    format: new GeoJSON(),
-  }),
-  style: polygonStyleFunction,
-});
-
-// Lines
-function lineStyleFunction(feature, resolution) {
-  return new Style({
-    stroke: new Stroke({
-      color: 'green',
-      width: 2,
-    }),
-    text: createTextStyle(feature, resolution, myDom.lines),
-  });
+class PolygonExample extends Example {
+  constructor() {
+    super('polygon');
+  }
+  createStyleFunction(values) {
+    return function (feature, resolution) {
+      return new Style({
+        stroke: new Stroke({
+          color: 'blue',
+          width: 1,
+        }),
+        fill: new Fill({
+          color: 'rgba(0, 0, 255, 0.1)',
+        }),
+        text: createTextStyle(feature, resolution, values),
+      });
+    };
+  }
 }
 
-const vectorLines = new VectorLayer({
-  source: new VectorSource({
-    url: 'data/geojson/line-samples.geojson',
-    format: new GeoJSON(),
-  }),
-  style: lineStyleFunction,
-});
-
-// Points
-function pointStyleFunction(feature, resolution) {
-  return new Style({
-    image: new CircleStyle({
-      radius: 10,
-      fill: new Fill({color: 'rgba(255, 0, 0, 0.1)'}),
-      stroke: new Stroke({color: 'red', width: 1}),
-    }),
-    text: createTextStyle(feature, resolution, myDom.points),
-  });
+class LineExample extends Example {
+  constructor() {
+    super('line');
+  }
+  createStyleFunction(values) {
+    return function (feature, resolution) {
+      return new Style({
+        stroke: new Stroke({
+          color: 'green',
+          width: 2,
+        }),
+        text: createTextStyle(feature, resolution, values),
+      });
+    };
+  }
 }
 
-const vectorPoints = new VectorLayer({
-  source: new VectorSource({
-    url: 'data/geojson/point-samples.geojson',
-    format: new GeoJSON(),
-  }),
-  style: pointStyleFunction,
-});
+class PointExample extends Example {
+  constructor() {
+    super('point');
+  }
+  createStyleFunction(values) {
+    return function (feature, resolution) {
+      return new Style({
+        image: new CircleStyle({
+          radius: 10,
+          fill: new Fill({color: 'rgba(255, 0, 0, 0.1)'}),
+          stroke: new Stroke({color: 'red', width: 1}),
+        }),
+        text: createTextStyle(feature, resolution, values),
+      });
+    };
+  }
+}
 
 const map = new Map({
   layers: [
     new TileLayer({
       source: new OSM(),
     }),
-    vectorPolygons,
-    vectorLines,
-    vectorPoints,
+    new PolygonExample().getLayer(),
+    new LineExample().getLayer(),
+    new PointExample().getLayer(),
   ],
   target: 'map',
   view: new View({
@@ -208,21 +213,16 @@ const map = new Map({
   }),
 });
 
-document
-  .getElementById('refresh-points')
-  .addEventListener('click', function () {
-    vectorPoints.setStyle(pointStyleFunction);
+/**
+ * Convert 'offset-x' -> 'offsetX'
+ * @param {string} string A string in caterpillar/caterpiller-case.
+ * @return {string} The same string in camel case.
+ */
+function toCamelCase(string) {
+  return string.replace(/-(.)/g, function (match, group1) {
+    return group1.toUpperCase();
   });
-
-document.getElementById('refresh-lines').addEventListener('click', function () {
-  vectorLines.setStyle(lineStyleFunction);
-});
-
-document
-  .getElementById('refresh-polygons')
-  .addEventListener('click', function () {
-    vectorPolygons.setStyle(polygonStyleFunction);
-  });
+}
 
 /**
  * @param {number} n The max number of characters to keep.
