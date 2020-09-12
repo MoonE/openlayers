@@ -42,7 +42,7 @@ const createTextStyle = function (feature, resolution, values) {
   const placement = values.placement;
   const maxAngle = Number.parseFloat(values.maxAngle);
   const overflow = values.overflow == 'true';
-  const rotation = Number.parseFloat(values.rotation);
+  const rotation = (Number(values.rotation) / 180) * Math.PI;
   if (values.font == "'Open Sans'" && !openSansAdded) {
     const openSans = document.createElement('link');
     openSans.href = 'https://fonts.googleapis.com/css?family=Open+Sans';
