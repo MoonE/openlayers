@@ -191,6 +191,8 @@ class CanvasVectorLayerRenderer extends CanvasLayerRenderer {
       context.clearRect(0, 0, width, height);
     }
 
+    replayGroup.resetDeclutterItems();
+
     this.preRender(context, frameState);
 
     const extent = frameState.extent;

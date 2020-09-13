@@ -637,6 +637,10 @@ class Executor {
     };
   }
 
+  resetDeclutterItems() {
+    this.declutterItems.length = 0;
+  }
+
   /**
    * @private
    * @param {CanvasRenderingContext2D} context Context.
@@ -659,7 +663,6 @@ class Executor {
     featureCallback,
     opt_hitExtent
   ) {
-    this.declutterItems.length = 0;
     /** @type {Array<number>} */
     let pixelCoordinates;
     if (this.pixelCoordinates_ && equals(transform, this.renderedTransform_)) {

@@ -310,6 +310,15 @@ class ExecutorGroup {
     return isEmpty(this.executorsByZIndex_);
   }
 
+  resetDeclutterItems() {
+    for (const z in this.executorsByZIndex_) {
+      const replay = this.executorsByZIndex_[z];
+      for (const type in replay) {
+        replay[type].resetDeclutterItems();
+      }
+    }
+  }
+
   /**
    * @param {CanvasRenderingContext2D} context Context.
    * @param {number} contextScale Scale of the context.
