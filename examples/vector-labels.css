@@ -15,13 +15,27 @@
   width: 85px;
 }
 
-.edit-form-elem input,
-.edit-form-elem select {
+.edit-form-elem input:not([type="checkbox"]),
+.edit-form-elem select,
+.color-picker {
   width: 130px;
 }
-.edit-form-elem .half-width {
+.edit-form-elem input.half-width {
   width: 62px;
 }
+
+.edit-form-elem .half-width:not(:last-child),
+.color-picker > *:not(:last-child) {
+  margin-right: 4px;
+}
 .edit-form-elem .half-width:not(:last-child) {
-  margin-right: 6px;
+  width: 63px;
+}
+
+.color-picker {
+  display: inline-flex;
+  align-items: center;
+}
+.color-picker input[type="color"] {
+  flex: 1;
 }

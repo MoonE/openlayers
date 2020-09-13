@@ -83,17 +83,10 @@ tags: "geojson, vector, openstreetmap, label"
     </select>
     <br />
     <label for="points-max-angle">Max Angle: </label>
-    <select disabled id="points-max-angle">
-      <option value="0.7853981633974483" selected="selected">45°</option>
-      <option value="2.0943951023931953">120°</option>
-      <option value="6.283185307179586">360°</option>
-    </select>
+    <input id="points-max-angle" disabled type="range" step="15" min="0" max="360" value="0">
     <br />
     <label for="points-overflow">Exceed Len: </label>
-    <select disabled id="points-overflow">
-      <option value="true">True</option>
-      <option value="false" selected="selected">False</option>
-    </select>
+    <input type="checkbox" disabled id="points-overflow" />
     <br />
     <label for="points-size">Size: </label>
     <input type="text" value="12px" id="points-size" />
@@ -101,23 +94,39 @@ tags: "geojson, vector, openstreetmap, label"
     <label for="points-height">Line height: </label>
     <input type="text" value="1" id="points-height" />
     <br />
-    <label for="points-offset-x">Offset X: </label>
-    <input type="text" value="0" id="points-offset-x" />
-    <br />
-    <label for="points-offset-y">Offset Y: </label>
-    <input type="text" value="0" id="points-offset-y" />
+    <label for="points-offset-x">Offset (x/y): </label>
+    <input type="number" value="0" id="points-offset-x" class="half-width"/>
+    <input type="number" value="0" id="points-offset-y" class="half-width"/>
     <br />
     <label for="points-color">Color: </label>
-    <input type="text" value="#aa3300" id="points-color" />
+    <input type="color" value="#aa3300" id="points-color" />
     <br />
-    <label for="points-outline" title="Outline Color">O. Color: </label>
-    <input type="text" value="#ffffff" id="points-outline" />
+    <label for="points-outline-enabled" title="Outline Color">O. Color: </label>
+    <span class="color-picker">
+      <input type="checkbox" id="points-outline-enabled" />
+      <input type="color" value="#ffffff" id="points-outline" />
+    </span>
     <br />
     <label for="points-outline-width" title="Outline Width">O. Width: </label>
-    <input type="text" value="3" id="points-outline-width" />
+    <input type="number" value="3" id="points-outline-width" />
+    <br />
+    <label for="points-background-fill-enabled" title="Background fill color">Bg fill: </label>
+    <span class="color-picker">
+      <input type="checkbox" id="points-background-fill-enabled" />
+      <input type="color" value="#008000" id="points-background-fill" />
+    </span>
+    <br />
+    <label for="points-background-stroke-enabled" title="Background stroke color">Bg stroke: </label>
+    <span class="color-picker">
+      <input type="checkbox" id="points-background-stroke-enabled" />
+      <input type="color" value="#ffffff" id="points-background-stroke" />
+    </span>
     <br />
     <label for="points-scale-x" title="Outline Width">Scale (x/y): </label>
     <input type="text" value="1" id="points-scale-x" class="half-width" /><input type="text" value="1" id="points-scale-y" class="half-width" />
+    <br />
+    <label for="points-declutter">Declutter: </label>
+    <input type="checkbox" id="points-declutter">
   </div>
 </div>
 
@@ -193,17 +202,10 @@ tags: "geojson, vector, openstreetmap, label"
     </select>
     <br />
     <label for="lines-max-angle">Max Angle: </label>
-    <select id="lines-max-angle">
-      <option value="0.7853981633974483" selected="selected">45°</option>
-      <option value="2.0943951023931953">120°</option>
-      <option value="6.283185307179586">360°</option>
-    </select>
+    <input id="lines-max-angle" type="range" step="15" min="0" max="360" value="0">
     <br />
     <label for="lines-overflow">Exceed Len: </label>
-    <select id="lines-overflow">
-      <option value="true">True</option>
-      <option value="false" selected="selected">False</option>
-    </select>
+    <input type="checkbox" id="lines-overflow" />
     <br />
     <label for="lines-size">Size: </label>
     <input type="text" value="12px" id="lines-size" />
@@ -211,23 +213,39 @@ tags: "geojson, vector, openstreetmap, label"
     <label for="lines-height">Line height: </label>
     <input type="text" value="1.2" id="lines-height" />
     <br />
-    <label for="lines-offset-x">Offset X: </label>
-    <input type="text" value="0" id="lines-offset-x" />
-    <br />
-    <label for="lines-offset-y">Offset Y: </label>
-    <input type="text" value="0" id="lines-offset-y" />
+    <label for="lines-offset-x">Offset (x/y): </label>
+    <input type="number" value="0" id="lines-offset-x" class="half-width" />
+    <input type="number" value="0" id="lines-offset-y" class="half-width" />
     <br />
     <label for="lines-color">Color: </label>
-    <input type="text" value="green" id="lines-color" />
+    <input type="color" value="#008000" id="lines-color" />
     <br />
-    <label for="lines-outline" title="Outline Color">O. Color: </label>
-    <input type="text" value="#ffffff" id="lines-outline" />
+    <label for="lines-outline-enabled" title="Outline color">O. Color: </label>
+    <span class="color-picker">
+      <input type="checkbox" id="lines-outline-enabled" />
+      <input type="color" value="#ffffff" id="lines-outline" />
+    </span>
     <br />
     <label for="lines-outline-width" title="Outline Width">O. Width: </label>
-    <input type="text" value="3" id="lines-outline-width" />
+    <input type="number" value="3" id="lines-outline-width" />
+    <br />
+    <label for="lines-background-fill-enabled" title="Background fill color">Bg fill: </label>
+    <span class="color-picker">
+      <input type="checkbox" id="lines-background-fill-enabled" />
+      <input type="color" value="#008000" id="lines-background-fill" />
+    </span>
+    <br />
+    <label for="lines-background-stroke-enabled" title="Background stroke color">Bg stroke: </label>
+    <span class="color-picker">
+      <input type="checkbox" id="lines-background-stroke-enabled" />
+      <input type="color" value="#ffffff" id="lines-background-stroke" />
+    </span>
     <br />
     <label for="lines-scale-x">Scale (x/y): </label>
     <input type="text" value="1" id="lines-scale-x" class="half-width" /><input type="text" value="1" id="lines-scale-y" class="half-width" />
+    <br />
+    <label for="lines-declutter">Declutter: </label>
+    <input type="checkbox" id="lines-declutter">
   </div>
 </div>
 
@@ -303,17 +321,10 @@ tags: "geojson, vector, openstreetmap, label"
     </select>
     <br />
     <label for="polygons-max-angle">Max Angle: </label>
-    <select id="polygons-max-angle">
-      <option value="0.7853981633974483" selected="selected">45°</option>
-      <option value="2.0943951023931953">120°</option>
-      <option value="6.283185307179586">360°</option>
-    </select>
+    <input id="polygons-max-angle" type="range" step="15" min="0" max="360" value="0">
     <br />
     <label for="polygons-overflow">Exceed Len: </label>
-    <select id="polygons-overflow">
-      <option value="true">True</option>
-      <option value="false" selected="selected">False</option>
-    </select>
+    <input type="checkbox" id="polygons-overflow" />
     <br />
     <label for="polygons-size">Size: </label>
     <input type="text" value="10px" id="polygons-size" />
@@ -321,22 +332,38 @@ tags: "geojson, vector, openstreetmap, label"
     <label for="polygons-height">Line height: </label>
     <input type="text" value="1" id="polygons-height" />
     <br />
-    <label for="polygons-offset-x">Offset X: </label>
-    <input type="text" value="0" id="polygons-offset-x" />
-    <br />
-    <label for="polygons-offset-y">Offset Y: </label>
-    <input type="text" value="0" id="polygons-offset-y" />
+    <label for="polygons-offset-x">Offset (x/y): </label>
+    <input type="number" value="0" id="polygons-offset-x" class="half-width" />
+    <input type="number" value="0" id="polygons-offset-y" class="half-width" />
     <br />
     <label for="polygons-color">Color: </label>
-    <input type="text" value="blue" id="polygons-color" />
+    <input type="color" value="#0000ff" id="polygons-color" />
     <br />
-    <label for="polygons-outline" title="Outline Color">O. Color: </label>
-    <input type="text" value="#ffffff" id="polygons-outline" />
+    <label for="polygons-outline-enabled" title="Outline Color">O. Color: </label>
+    <span class="color-picker">
+      <input type="checkbox" id="polygons-outline-enabled" />
+      <input type="color" value="#ffffff" id="polygons-outline" />
+    </span>
     <br />
     <label for="polygons-outline-width" title="Outline Width">O. Width: </label>
-    <input type="text" value="3" id="polygons-outline-width" />
+    <input type="number" value="3" id="polygons-outline-width" />
+    <br />
+    <label for="polygons-background-fill-enabled" title="Background fill color">Bg fill: </label>
+    <span class="color-picker">
+      <input type="checkbox" id="polygons-background-fill-enabled" />
+      <input type="color" value="#008000" id="polygons-background-fill" />
+    </span>
+    <br />
+    <label for="polygons-background-stroke-enabled" title="Background stroke color">Bg stroke: </label>
+    <span class="color-picker">
+      <input type="checkbox" id="polygons-background-stroke-enabled" />
+      <input type="color" value="#ffffff" id="polygons-background-stroke" />
+    </span>
     <br />
     <label for="polygons-scale-x">Scale (x/y): </label>
     <input type="text" value="1" id="polygons-scale-x" class="half-width" /><input type="text" value="1" id="polygons-scale-y" class="half-width" />
+    <br />
+    <label for="polygons-declutter">Declutter: </label>
+    <input type="checkbox" id="polygons-declutter">
   </div>
 </div>

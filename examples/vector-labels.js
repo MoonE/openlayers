@@ -13,37 +13,37 @@ import {Tile as TileLayer, Vector as VectorLayer} from '../src/ol/layer.js';
 
 let openSansAdded = false;
 
-const getText = function (feature, resolution, values) {
+function getText(feature, resolution, values) {
   const type = values.text;
-  const maxResolution = Number.parseFloat(values.maxResolution);
+  const maxResolution = Number(values.maxResolution);
   let text = feature.get('name');
 
   if (resolution > maxResolution) {
     text = '';
-  } else if (type == 'hide') {
+  } else if (type === 'hide') {
     text = '';
-  } else if (type == 'shorten') {
+  } else if (type === 'shorten') {
     text = text.trunc(12);
-  } else if (type == 'wrap' && values.placement != 'line') {
+  } else if (type === 'wrap' && values.placement !== 'line') {
     text = stringDivider(text, 16, '\n');
   }
 
   return text;
-};
+}
 
-const createTextStyle = function (feature, resolution, values) {
+function createTextStyle(values) {
   const align = values.align;
   const baseline = values.baseline;
   const size = values.size;
   const height = values.height;
-  const offsetX = Number(values.offsetX);
-  const offsetY = Number(values.offsetY);
+  const offsetX = Number(values.offsetX) || 0;
+  const offsetY = Number(values.offsetY) || 0;
   const weight = values.weight;
   const placement = values.placement;
-  const maxAngle = Number.parseFloat(values.maxAngle);
-  const overflow = values.overflow == 'true';
+  const maxAngle = (Number(values.maxAngle) / 180) * Math.PI;
+  const overflow = values.overflow;
   const rotation = (Number(values.rotation) / 180) * Math.PI;
-  if (values.font == "'Open Sans'" && !openSansAdded) {
+  if (!openSansAdded && values.font === "'Open Sans'") {
     const openSans = document.createElement('link');
     openSans.href = 'https://fonts.googleapis.com/css?family=Open+Sans';
     openSans.rel = 'stylesheet';
@@ -54,35 +54,69 @@ const createTextStyle = function (feature, resolution, values) {
   const fillColor = values.color;
   const outlineColor = values.outline;
   const outlineWidth = Number(values.outlineWidth);
+  const scaleX = Number(values.scaleX);
+  const scaleY = Number(values.scaleY);
 
   return new Text({
     textAlign: align == '' ? undefined : align,
     textBaseline: baseline,
     font: font,
-    text: getText(feature, resolution, values),
     fill: new Fill({color: fillColor}),
-    stroke: new Stroke({color: outlineColor, width: outlineWidth}),
+    stroke: values.outlineEnabled
+      ? new Stroke({color: outlineColor, width: outlineWidth})
+      : undefined,
     offsetX: offsetX,
     offsetY: offsetY,
     placement: placement,
-    maxAngle: maxAngle,
+    maxAngle: Number.isNaN(maxAngle) ? undefined : maxAngle,
     overflow: overflow,
     rotation: rotation,
-    scale: [Number(values.scaleX) || 1, Number(values.scaleY) || 1],
+    backgroundFill: values.backgroundFillEnabled
+      ? new Fill({color: values.backgroundFill})
+      : undefined,
+    backgroundStroke: values.backgroundStrokeEnabled
+      ? new Stroke({color: values.backgroundStroke})
+      : undefined,
+    scale: [
+      Number.isNaN(scaleX) ? 1 : scaleX,
+      Number.isNaN(scaleY) ? 1 : scaleX,
+    ],
   });
-};
+}
 
 class Example {
-  constructor(geometryType) {
+  constructor(geometryType, map) {
+    this.map = map;
+    this.geometryType = geometryType;
+    this.declutter = false;
     this.nodeList = this.createNodeList(geometryType);
-    this.layer = this.createLayer(geometryType);
-    this.layer.setStyle(this.createStyleFunction(this.readInputValues()));
+    this.values = this.readInputValues();
+    this.style = this.createStyle(this.values);
+    this.addLayer();
     this.listenForInputChange();
+  }
+
+  setDeclutter(declutter) {
+    if (declutter !== this.declutter) {
+      this.declutter = declutter;
+      this.addLayer();
+    }
+  }
+
+  addLayer() {
+    if (this.layer) {
+      this.map.removeLayer(this.layer);
+    }
+    this.layer = this.createLayer();
+    this.map.addLayer(this.layer);
   }
 
   listenForInputChange() {
     const boundInputChange = function () {
-      this.layer.setStyle(this.createStyleFunction(this.readInputValues()));
+      this.values = this.readInputValues();
+      this.setDeclutter(this.values.declutter);
+      this.style = this.createStyle(this.values);
+      this.layer.changed();
     }.bind(this);
     this.nodeList.forEach(function (item) {
       item.node.addEventListener('input', boundInputChange);
@@ -91,23 +125,31 @@ class Example {
 
   readInputValues() {
     return this.nodeList.reduce(function (values, item) {
-      values[item.name] = item.node.value;
+      const valueProperty =
+        item.node.nodeName === 'INPUT' && item.node.type === 'checkbox'
+          ? 'checked'
+          : 'value';
+      values[item.name] = item.node[valueProperty];
       return values;
     }, {});
   }
 
-  createStyleFunction(values) {
-    return function () {
-      return null;
-    };
+  createStyle(values) {
+    throw new Error('Abstract method');
   }
 
-  createLayer(geometryType) {
+  createLayer() {
     return new VectorLayer({
+      declutter: this.declutter,
       source: new VectorSource({
-        url: `data/geojson/${geometryType}-samples.geojson`,
+        url: `data/geojson/${this.geometryType}-samples.geojson`,
         format: new GeoJSON(),
       }),
+      style: function (feature, resolution) {
+        const text = getText(feature, resolution, this.values);
+        this.style.getText().setText(text);
+        return this.style;
+      }.bind(this),
     });
   }
 
@@ -118,14 +160,20 @@ class Example {
   createNodeList(geometryType) {
     return [
       'align',
+      'background-fill',
+      'background-fill-enabled',
+      'background-stroke',
+      'background-stroke-enabled',
       'baseline',
       'color',
+      'declutter',
       'font',
       'height',
       'max-angle',
       'max-resolution',
       'offset-x',
       'offset-y',
+      'outline-enabled',
       'outline-width',
       'outline',
       'overflow',
@@ -136,67 +184,62 @@ class Example {
       'size',
       'text',
       'weight',
-    ].map(function (type) {
-      return {
-        node: document.getElementById(geometryType + 's-' + type),
-        name: toCamelCase(type),
-      };
+    ]
+      .map((type) => {
+        return {
+          node: document.getElementById(geometryType + 's-' + type),
+          name: toCamelCase(type),
+        };
+      })
+      .filter((item) => item.node);
+  }
+}
+
+class PointExample extends Example {
+  constructor(map) {
+    super('point', map);
+  }
+  createStyle(values) {
+    return new Style({
+      image: new CircleStyle({
+        radius: 7,
+        fill: new Fill({color: 'red'}),
+      }),
+      text: createTextStyle(values),
+    });
+  }
+}
+
+class LineExample extends Example {
+  constructor(map) {
+    super('line', map);
+  }
+  createStyle(values) {
+    return new Style({
+      stroke: new Stroke({
+        color: 'green',
+        width: 2,
+      }),
+      text: createTextStyle(values),
     });
   }
 }
 
 class PolygonExample extends Example {
-  constructor() {
-    super('polygon');
+  constructor(map) {
+    super('polygon', map);
   }
-  createStyleFunction(values) {
-    return function (feature, resolution) {
-      return new Style({
-        stroke: new Stroke({
-          color: 'blue',
-          width: 1,
-        }),
-        fill: new Fill({
-          color: 'rgba(0, 0, 255, 0.1)',
-        }),
-        text: createTextStyle(feature, resolution, values),
-      });
-    };
-  }
-}
-
-class LineExample extends Example {
-  constructor() {
-    super('line');
-  }
-  createStyleFunction(values) {
-    return function (feature, resolution) {
-      return new Style({
-        stroke: new Stroke({
-          color: 'green',
-          width: 2,
-        }),
-        text: createTextStyle(feature, resolution, values),
-      });
-    };
-  }
-}
-
-class PointExample extends Example {
-  constructor() {
-    super('point');
-  }
-  createStyleFunction(values) {
-    return function (feature, resolution) {
-      return new Style({
-        image: new CircleStyle({
-          radius: 10,
-          fill: new Fill({color: 'rgba(255, 0, 0, 0.1)'}),
-          stroke: new Stroke({color: 'red', width: 1}),
-        }),
-        text: createTextStyle(feature, resolution, values),
-      });
-    };
+  createStyle(values) {
+    return new Style({
+      stroke: new Stroke({
+        color: 'blue',
+        width: 1,
+      }),
+      fill: new Fill({
+        color: 'rgba(0, 0, 255, 0.1)',
+      }),
+      text: createTextStyle(values),
+    });
   }
 }
 
@@ -205,9 +248,6 @@ const map = new Map({
     new TileLayer({
       source: new OSM(),
     }),
-    new PolygonExample().getLayer(),
-    new LineExample().getLayer(),
-    new PointExample().getLayer(),
   ],
   target: 'map',
   view: new View({
@@ -215,6 +255,12 @@ const map = new Map({
     zoom: 8,
   }),
 });
+
+const examples = [
+  new PointExample(map),
+  new LineExample(map),
+  new PolygonExample(map),
+];
 
 /**
  * Convert 'offset-x' -> 'offsetX'
