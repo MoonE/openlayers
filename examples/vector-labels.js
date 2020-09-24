@@ -79,7 +79,7 @@ function createTextStyle(values) {
       : undefined,
     scale: [
       Number.isNaN(scaleX) ? 1 : scaleX,
-      Number.isNaN(scaleY) ? 1 : scaleX,
+      Number.isNaN(scaleY) ? 1 : scaleY,
     ],
   });
 }
@@ -303,3 +303,8 @@ function stringDivider(str, width, spaceReplacer) {
   }
   return str;
 }
+
+// $('#polygons-tab a, lines-tab a, points-tab a').on('click', function (e) {
+//   e.preventDefault();
+//   $(this).tab('show');
+// });
