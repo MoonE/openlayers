@@ -1,21 +1,27 @@
 .edit-form {
   display: inline-block;
-  margin: 5px;
-  padding: 10px;
-  border: 1px solid black;
-  white-space: nowrap;
+  margin: 0 5px 5px 0px;
+  border: 1px solid #dee2e6;
+  margin-top: -1px;
 }
 
 .edit-form h2 {
   font-size: 1.5em;
 }
 
-.edit-form-elem label {
+.edit-form-elem label,
+.edit-form-elem .label {
   display: inline-block;
   width: 85px;
 }
+label.value-label {
+  width: auto;
+}
 
-.edit-form-elem input:not([type="checkbox"]),
+.edit-form-elem input[type="color"],
+.edit-form-elem input[type="number"],
+.edit-form-elem input[type="range"],
+.edit-form-elem input[type="text"],
 .edit-form-elem select,
 .color-picker {
   width: 130px;
@@ -38,4 +44,23 @@
 }
 .color-picker input[type="color"] {
   flex: 1;
+}
+
+.group {
+  display: inline-block;
+  vertical-align: top;
+  margin: 10px;
+  white-space: nowrap;
+}
+.input-group {
+  display: inline-block;
+  width: inherit;
+}
+.center {
+  margin-left: auto;
+  margin-right: auto;
+  display: inline-block;
+}
+.group-padding * {
+  vertical-align: middle;
 }

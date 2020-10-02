@@ -15,7 +15,7 @@ let openSansAdded = false;
 
 function getText(feature, resolution, values) {
   const type = values.text;
-  const maxResolution = Number(values.maxResolution);
+  const maxResolution = Math.pow(2, Number(values.maxResolution));
   let text = feature.get('name');
 
   if (resolution > maxResolution) {
@@ -32,17 +32,6 @@ function getText(feature, resolution, values) {
 }
 
 function createTextStyle(values) {
-  const align = values.align;
-  const baseline = values.baseline;
-  const size = values.size;
-  const height = values.height;
-  const offsetX = Number(values.offsetX) || 0;
-  const offsetY = Number(values.offsetY) || 0;
-  const weight = values.weight;
-  const placement = values.placement;
-  const maxAngle = (Number(values.maxAngle) / 180) * Math.PI;
-  const overflow = values.overflow;
-  const rotation = (Number(values.rotation) / 180) * Math.PI;
   if (!openSansAdded && values.font === "'Open Sans'") {
     const openSans = document.createElement('link');
     openSans.href = 'https://fonts.googleapis.com/css?family=Open+Sans';
@@ -50,37 +39,47 @@ function createTextStyle(values) {
     document.getElementsByTagName('head')[0].appendChild(openSans);
     openSansAdded = true;
   }
-  const font = weight + ' ' + size + '/' + height + ' ' + values.font;
-  const fillColor = values.color;
-  const outlineColor = values.outline;
-  const outlineWidth = Number(values.outlineWidth);
-  const scaleX = Number(values.scaleX);
-  const scaleY = Number(values.scaleY);
-
+  const font =
+    values.weight + ' ' + values.size + '/' + values.height + ' ' + values.font;
+  const scaleX = values.scaleX === '' ? 1 : Number(values.scaleX);
+  const scaleY = values.scaleY === '' ? 1 : Number(values.scaleY);
   return new Text({
-    textAlign: align == '' ? undefined : align,
-    textBaseline: baseline,
-    font: font,
-    fill: new Fill({color: fillColor}),
-    stroke: values.outlineEnabled
-      ? new Stroke({color: outlineColor, width: outlineWidth})
-      : undefined,
-    offsetX: offsetX,
-    offsetY: offsetY,
-    placement: placement,
-    maxAngle: Number.isNaN(maxAngle) ? undefined : maxAngle,
-    overflow: overflow,
-    rotation: rotation,
     backgroundFill: values.backgroundFillEnabled
       ? new Fill({color: values.backgroundFill})
       : undefined,
     backgroundStroke: values.backgroundStrokeEnabled
-      ? new Stroke({color: values.backgroundStroke})
+      ? new Stroke({
+          color: values.backgroundStroke,
+          width: Number(values.backgroundStrokeWidth) || 0,
+        })
       : undefined,
+    fill: new Fill({color: values.color}),
+    font: font,
+    maxAngle: (Number(values.maxAngle) || 0) * (Math.PI / 180),
+    offsetX: Number(values.offsetX) || 0,
+    offsetY: Number(values.offsetY) || 0,
+    overflow: values.overflow,
+    padding: [
+      Number(values.paddingTop) || 0,
+      Number(values.paddingRight) || 0,
+      Number(values.paddingBottom) || 0,
+      Number(values.paddingLeft) || 0,
+    ],
+    placement: values.placement,
+    rotateWithView: values.rotateWithView,
+    rotation: (Number(values.rotation) || 0) * (Math.PI / 180),
     scale: [
       Number.isNaN(scaleX) ? 1 : scaleX,
       Number.isNaN(scaleY) ? 1 : scaleY,
     ],
+    stroke: values.outlineEnabled
+      ? new Stroke({
+          color: values.outline,
+          width: Number(values.outlineWidth) || 0,
+        })
+      : undefined,
+    textAlign: values.align === '' ? undefined : values.align,
+    textBaseline: values.baseline,
   });
 }
 
@@ -88,10 +87,19 @@ class Example {
   constructor(geometryType, map) {
     this.map = map;
     this.geometryType = geometryType;
-    this.declutter = false;
     this.nodeList = this.createNodeList(geometryType);
     this.values = this.readInputValues();
     this.style = this.createStyle(this.values);
+    this.declutter = this.values.declutter;
+    this.source = new VectorSource({
+      url: `data/geojson/${geometryType}-samples.geojson`,
+      format: new GeoJSON(),
+    });
+    this.styleFn = function (feature, resolution) {
+      const text = getText(feature, resolution, this.values);
+      this.style.getText().setText(text);
+      return this.style;
+    }.bind(this);
     this.addLayer();
     this.listenForInputChange();
   }
@@ -119,17 +127,27 @@ class Example {
       this.layer.changed();
     }.bind(this);
     this.nodeList.forEach(function (item) {
-      item.node.addEventListener('input', boundInputChange);
+      if (item.radios) {
+        Array.prototype.forEach.call(item.radios, (radio) =>
+          radio.addEventListener('input', boundInputChange)
+        );
+      } else {
+        item.node.addEventListener('input', boundInputChange);
+      }
     });
   }
 
   readInputValues() {
     return this.nodeList.reduce(function (values, item) {
-      const valueProperty =
-        item.node.nodeName === 'INPUT' && item.node.type === 'checkbox'
-          ? 'checked'
-          : 'value';
-      values[item.name] = item.node[valueProperty];
+      if (item.radios) {
+        const radio = Array.prototype.find.call(
+          item.radios,
+          (radio) => radio.checked
+        );
+        values[item.name] = radio ? radio.value : null;
+      } else {
+        values[item.name] = item.node[item.valueProperty];
+      }
       return values;
     }, {});
   }
@@ -141,57 +159,28 @@ class Example {
   createLayer() {
     return new VectorLayer({
       declutter: this.declutter,
-      source: new VectorSource({
-        url: `data/geojson/${this.geometryType}-samples.geojson`,
-        format: new GeoJSON(),
-      }),
-      style: function (feature, resolution) {
-        const text = getText(feature, resolution, this.values);
-        this.style.getText().setText(text);
-        return this.style;
-      }.bind(this),
+      source: this.source,
+      style: this.styleFn,
     });
   }
 
-  getLayer() {
-    return this.layer;
-  }
-
   createNodeList(geometryType) {
-    return [
-      'align',
-      'background-fill',
-      'background-fill-enabled',
-      'background-stroke',
-      'background-stroke-enabled',
-      'baseline',
-      'color',
-      'declutter',
-      'font',
-      'height',
-      'max-angle',
-      'max-resolution',
-      'offset-x',
-      'offset-y',
-      'outline-enabled',
-      'outline-width',
-      'outline',
-      'overflow',
-      'placement',
-      'rotation',
-      'scale-x',
-      'scale-y',
-      'size',
-      'text',
-      'weight',
-    ]
-      .map((type) => {
+    const idPrefix = geometryType + 's-';
+    return Array.prototype.map.call(
+      document.getElementById(idPrefix + 'edit-form').querySelectorAll('[id]'),
+      (node) => {
+        const radios = node.querySelectorAll('input[type="radio"]');
         return {
-          node: document.getElementById(geometryType + 's-' + type),
-          name: toCamelCase(type),
+          node: node,
+          radios: radios.length > 0 ? radios : undefined,
+          name: toCamelCase(node.id.replace(idPrefix, '')),
+          valueProperty:
+            node.nodeName === 'INPUT' && node.type === 'checkbox'
+              ? 'checked'
+              : 'value',
         };
-      })
-      .filter((item) => item.node);
+      }
+    );
   }
 }
 
@@ -203,7 +192,13 @@ class PointExample extends Example {
     return new Style({
       image: new CircleStyle({
         radius: 7,
-        fill: new Fill({color: 'red'}),
+        fill: new Fill({color: values.color}),
+        stroke: values.outlineEnabled
+          ? new Stroke({
+              width: Number(values.outlineWidth) || 0,
+              color: values.outline,
+            })
+          : undefined,
       }),
       text: createTextStyle(values),
     });
@@ -217,7 +212,7 @@ class LineExample extends Example {
   createStyle(values) {
     return new Style({
       stroke: new Stroke({
-        color: 'green',
+        color: values.color,
         width: 2,
       }),
       text: createTextStyle(values),
@@ -232,11 +227,13 @@ class PolygonExample extends Example {
   createStyle(values) {
     return new Style({
       stroke: new Stroke({
-        color: 'blue',
+        color: values.color,
         width: 1,
       }),
       fill: new Fill({
-        color: 'rgba(0, 0, 255, 0.1)',
+        color: /^#(?:[0-9a-f]{3}){1,2}$/.test(values.color)
+          ? values.color + (values.color.length === 4 ? '2' : '22')
+          : values.color,
       }),
       text: createTextStyle(values),
     });
@@ -264,7 +261,7 @@ const examples = [
 
 /**
  * Convert 'offset-x' -> 'offsetX'
- * @param {string} string A string in caterpillar/caterpiller-case.
+ * @param {string} string A string in caterpillar/kebab-case.
  * @return {string} The same string in camel case.
  */
 function toCamelCase(string) {
@@ -280,7 +277,7 @@ function toCamelCase(string) {
 String.prototype.trunc =
   String.prototype.trunc ||
   function (n) {
-    return this.length > n ? this.substr(0, n - 1) + '...' : this.substr(0);
+    return this.length > n ? this.substr(0, n - 1) + '…' : this.substr(0);
   };
 
 // http://stackoverflow.com/questions/14484787/wrap-text-in-javascript
@@ -303,8 +300,3 @@ function stringDivider(str, width, spaceReplacer) {
   }
   return str;
 }
-
-// $('#polygons-tab a, lines-tab a, points-tab a').on('click', function (e) {
-//   e.preventDefault();
-//   $(this).tab('show');
-// });
