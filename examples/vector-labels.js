@@ -195,7 +195,7 @@ class PointExample extends Example {
         fill: new Fill({color: values.color}),
         stroke: values.outlineEnabled
           ? new Stroke({
-              width: Number(values.outlineWidth) || 0,
+              width: (Number(values.outlineWidth) || 0) / 2,
               color: values.outline,
             })
           : undefined,
@@ -255,8 +255,8 @@ const map = new Map({
 
 const examples = [
   new PointExample(map),
-  new LineExample(map),
-  new PolygonExample(map),
+  // new LineExample(map),
+  // new PolygonExample(map),
 ];
 
 /**
