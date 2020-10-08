@@ -377,7 +377,7 @@ class RegularShape extends ImageStyle {
       }
     }
 
-    const size = 2 * (this.radius_ + strokeWidth) + 1;
+    const size = 2 * this.radius_ + strokeWidth + 1;
 
     return {
       strokeStyle: strokeStyle,
