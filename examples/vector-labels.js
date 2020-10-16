@@ -40,7 +40,13 @@ function createTextStyle(values) {
     openSansAdded = true;
   }
   const font =
-    values.weight + ' ' + values.size + '/' + values.height + ' ' + values.font;
+    values.weight +
+    ' ' +
+    values.size +
+    '/' +
+    values.lineHeight +
+    ' ' +
+    values.font;
   const scaleX = values.scaleX === '' ? 1 : Number(values.scaleX);
   const scaleY = values.scaleY === '' ? 1 : Number(values.scaleY);
   return new Text({
@@ -112,11 +118,13 @@ class Example {
   }
 
   addLayer() {
-    if (this.layer) {
-      this.map.removeLayer(this.layer);
+    const group = this.map.getLayerGroup().getLayers();
+    let index = group.getArray().indexOf(this.layer);
+    if (index === -1) {
+      index = group.get('length');
     }
     this.layer = this.createLayer();
-    this.map.addLayer(this.layer);
+    group.setAt(index, this.layer);
   }
 
   listenForInputChange() {
@@ -152,7 +160,7 @@ class Example {
     }, {});
   }
 
-  createStyle(values) {
+  createStyle() {
     throw new Error('Abstract method');
   }
 
@@ -253,11 +261,9 @@ const map = new Map({
   }),
 });
 
-const examples = [
-  new PointExample(map),
-  // new LineExample(map),
-  // new PolygonExample(map),
-];
+new PointExample(map);
+new LineExample(map);
+new PolygonExample(map);
 
 /**
  * Convert 'offset-x' -> 'offsetX'
