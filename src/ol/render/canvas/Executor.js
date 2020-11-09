@@ -575,10 +575,9 @@ class Executor {
 
     // Remove the 2 pixels we added in createLabel() for the anchor
     const width = label.width / pixelRatio - 2 * textState.scale[0];
-    const anchorX = align * width + 2 * (0.5 - align) * strokeWidth;
+    const anchorX = align * width + (0.5 - align) * strokeWidth;
     const anchorY =
-      (baseline * label.height) / pixelRatio +
-      2 * (0.5 - baseline) * strokeWidth;
+      (baseline * label.height) / pixelRatio + (0.5 - baseline) * strokeWidth;
 
     return {
       label: label,
