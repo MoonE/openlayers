@@ -5,6 +5,7 @@ import TileJSON from '../src/ol/source/TileJSON.js';
 import VectorSource from '../src/ol/source/Vector.js';
 import View from '../src/ol/View.js';
 import {Icon, Style} from '../src/ol/style.js';
+import {LineString} from '../src/ol/geom.js';
 import {Modify} from '../src/ol/interaction.js';
 import {Tile as TileLayer, Vector as VectorLayer} from '../src/ol/layer.js';
 
@@ -24,10 +25,17 @@ const iconStyle = new Style({
   }),
 });
 
+const lineFeature = new Feature(
+  new LineString([
+    [0, 0],
+    [1000000, 1000000],
+  ])
+);
+
 iconFeature.setStyle(iconStyle);
 
 const vectorSource = new VectorSource({
-  features: [iconFeature],
+  features: [lineFeature, iconFeature],
 });
 
 const vectorLayer = new VectorLayer({
