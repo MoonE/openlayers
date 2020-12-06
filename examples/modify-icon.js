@@ -122,6 +122,7 @@ const vectorSource = new VectorSource({
     iconFeature,
     vertextLine1,
     vertextLine2,
+    new Feature(new Point([1500000, 1500000])),
   ],
 });
 
