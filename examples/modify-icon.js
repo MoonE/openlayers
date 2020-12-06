@@ -4,8 +4,8 @@ import Point from '../src/ol/geom/Point.js';
 import TileJSON from '../src/ol/source/TileJSON.js';
 import VectorSource from '../src/ol/source/Vector.js';
 import View from '../src/ol/View.js';
-import {Icon, Style} from '../src/ol/style.js';
-import {LineString} from '../src/ol/geom.js';
+import {Fill, Icon, Stroke, Style} from '../src/ol/style.js';
+import {LineString, Polygon} from '../src/ol/geom.js';
 import {Modify} from '../src/ol/interaction.js';
 import {Tile as TileLayer, Vector as VectorLayer} from '../src/ol/layer.js';
 
@@ -24,18 +24,67 @@ const iconStyle = new Style({
     src: 'data/icon.png',
   }),
 });
+iconFeature.setStyle(iconStyle);
 
 const lineFeature = new Feature(
   new LineString([
+    [1000000, 700000],
     [0, 0],
-    [1000000, 1000000],
+    [500000, 0],
+    [0, 0],
+    [1000000, -700000],
   ])
 );
-
-iconFeature.setStyle(iconStyle);
+lineFeature.setStyle(
+  new Style({
+    stroke: new Stroke({
+      color: 'green',
+      width: 6,
+    }),
+  })
+);
+const lineFeature2 = new Feature(
+  new LineString([
+    [1000000, 500000],
+    [0, 0],
+    [500000, 0],
+    [0, 0],
+    [1000000, -500000],
+  ])
+);
+lineFeature2.setStyle(
+  new Style({
+    stroke: new Stroke({
+      color: 'orange',
+      width: 5,
+    }),
+  })
+);
+const polygonFeature = new Feature(
+  new Polygon([
+    [
+      [1000000, 500000],
+      [500000, 0],
+      [0, 0],
+      [1000000, -500000],
+      [1000000, 500000],
+    ],
+  ])
+);
+polygonFeature.setStyle(
+  new Style({
+    fill: new Fill({
+      color: 'rgba(200, 0, 0, .3)',
+    }),
+    stroke: new Stroke({
+      color: 'red',
+      width: 5,
+    }),
+  })
+);
 
 const vectorSource = new VectorSource({
-  features: [lineFeature, iconFeature],
+  features: [lineFeature, lineFeature2, polygonFeature, iconFeature],
 });
 
 const vectorLayer = new VectorLayer({
