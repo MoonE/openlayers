@@ -83,8 +83,46 @@ polygonFeature.setStyle(
   })
 );
 
+const vertextLine1 = new Feature(
+  new LineString([
+    [-1000000, 1000000],
+    [-1000000, -1000000],
+    [-1000000, 1000000],
+  ])
+);
+vertextLine1.setStyle(
+  new Style({
+    stroke: new Stroke({
+      color: 'darkgray',
+      width: 10,
+    }),
+  })
+);
+const vertextLine2 = new Feature(
+  new LineString([
+    [-1000000, -1000000],
+    [-1000000, 1000000],
+    [-1000000, -1000000],
+  ])
+);
+vertextLine2.setStyle(
+  new Style({
+    stroke: new Stroke({
+      color: 'rebeccapurple',
+      width: 3,
+    }),
+  })
+);
+
 const vectorSource = new VectorSource({
-  features: [lineFeature, lineFeature2, polygonFeature, iconFeature],
+  features: [
+    lineFeature,
+    lineFeature2,
+    polygonFeature,
+    iconFeature,
+    vertextLine1,
+    vertextLine2,
+  ],
 });
 
 const vectorLayer = new VectorLayer({
