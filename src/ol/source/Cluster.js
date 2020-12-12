@@ -233,6 +233,14 @@ class Cluster extends VectorSource {
      * @type {Object<string, true>}
      */
     const clustered = {};
+    function unclaimedFeatures(neighbor) {
+      const uid = getUid(neighbor);
+      if (uid in clustered) {
+        return false;
+      }
+      clustered[uid] = true;
+      return true;
+    }
 
     for (let i = 0, ii = features.length; i < ii; i++) {
       const feature = features[i];
@@ -243,24 +251,18 @@ class Cluster extends VectorSource {
           createOrUpdateFromCoordinate(coordinates, extent);
           buffer(extent, mapDistance, extent);
 
-          let neighbors = this.source.getFeaturesInExtent(extent);
-          neighbors = neighbors.filter(function (neighbor) {
-            const uid = getUid(neighbor);
-            if (uid in clustered) {
-              return false;
-            }
-            clustered[uid] = true;
-            return true;
-          });
+          const neighbors = this.source
+            .getFeaturesInExtent(extent)
+            .filter(unclaimedFeatures);
           const cluster = this.createCluster(neighbors, extent);
           this.features.push(cluster);
         }
       }
     }
-    if (this.features.length === 1) {
+    const max = this.features.length - 1;
+    if (max === 0) {
       this.features[0].get('meta').order = 0;
     } else {
-      const max = this.features.length - 1;
       this.features.forEach(function (cluster, idx) {
         cluster.get('meta').order = idx / max;
       });
