@@ -835,10 +835,12 @@ class Modify extends PointerInteraction {
     this.ignoreNextSingleClick_ = false;
     this.willModifyFeatures_(evt, this.dragSegments_);
 
-    const vertex = [
-      evt.coordinate[0] + this.delta_[0],
-      evt.coordinate[1] + this.delta_[1],
-    ];
+    const vertex = evt.snapped
+      ? evt.coordinate.slice()
+      : [
+          evt.coordinate[0] + this.delta_[0],
+          evt.coordinate[1] + this.delta_[1],
+        ];
     const features = [];
     const geometries = [];
     for (let i = 0, ii = this.dragSegments_.length; i < ii; ++i) {

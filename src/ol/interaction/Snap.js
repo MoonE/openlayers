@@ -267,6 +267,7 @@ class Snap extends PointerInteraction {
     if (result.snapped) {
       evt.coordinate = result.vertex.slice(0, 2);
       evt.pixel = result.vertexPixel;
+      evt.snapped = true;
     }
     return super.handleEvent(evt);
   }

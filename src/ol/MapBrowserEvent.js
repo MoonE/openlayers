@@ -48,6 +48,9 @@ class MapBrowserEvent extends MapEvent {
      * @api
      */
     this.dragging = opt_dragging !== undefined ? opt_dragging : false;
+
+    /** @type {boolean} */
+    this.snapped = false;
   }
 
   /**
