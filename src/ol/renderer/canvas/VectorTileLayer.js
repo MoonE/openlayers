@@ -610,14 +610,23 @@ class CanvasVectorTileLayerRenderer extends CanvasTileLayerRenderer {
     );
     const tiles = /** @type {Array<import("../../VectorRenderTile.js").default>} */ (this
       .renderedTiles);
+
+    const layer = this.getLayer();
+    const context = this.context;
+    const opacity = layer.getOpacity();
+    if (opacity !== 1) {
+      context.save();
+      context.globalAlpha *= opacity;
+    }
+
+    const layerUid = getUid(layer);
     for (let i = 0, ii = tiles.length; i < ii; ++i) {
       const tile = tiles[i];
-      const declutterExecutorGroups =
-        tile.declutterExecutorGroups[getUid(this.getLayer())];
+      const declutterExecutorGroups = tile.declutterExecutorGroups[layerUid];
       if (declutterExecutorGroups) {
         for (let j = declutterExecutorGroups.length - 1; j >= 0; --j) {
           declutterExecutorGroups[j].execute(
-            this.context,
+            context,
             1,
             this.getTileRenderTransform(tile, frameState),
             frameState.viewState.rotation,
@@ -627,6 +636,9 @@ class CanvasVectorTileLayerRenderer extends CanvasTileLayerRenderer {
           );
         }
       }
+    }
+    if (opacity !== 1) {
+      context.restore();
     }
   }
 
@@ -700,6 +712,12 @@ class CanvasVectorTileLayerRenderer extends CanvasTileLayerRenderer {
     const viewState = frameState.viewState;
     const rotation = viewState.rotation;
 
+    const opacity = layer.getOpacity();
+    if (opacity !== 1) {
+      context.save();
+      context.globalAlpha *= opacity;
+    }
+
     const tiles = this.renderedTiles;
     const clips = [];
     const clipZs = [];
@@ -759,6 +777,10 @@ class CanvasVectorTileLayerRenderer extends CanvasTileLayerRenderer {
           clipped = true;
         }
       }
+    }
+
+    if (opacity !== 1) {
+      context.restore();
     }
 
     return this.container;
