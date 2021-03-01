@@ -12,7 +12,6 @@ import {
 import {Cluster, OSM, Vector as VectorSource} from '../src/ol/source.js';
 import {Polygon} from '../src/ol/geom.js';
 import {Tile as TileLayer, Vector as VectorLayer} from '../src/ol/layer.js';
-import {boundingExtent} from '../src/ol/extent.js';
 import {defaults as defaultInteractions} from '../src/ol/interaction.js';
 
 const distance = document.getElementById('distance');
@@ -206,21 +205,6 @@ distance.addEventListener('input', function () {
     });
     map.render();
   }
-});
-
-map.on('click', (e) => {
-  clusters.getFeatures(e.pixel).then((clickedFeatures) => {
-    if (clickedFeatures.length) {
-      // Get clustered Coordinates
-      const features = clickedFeatures[0].get('features');
-      if (features.length > 1) {
-        const extent = boundingExtent(
-          features.map((r) => r.getGeometry().getCoordinates())
-        );
-        map.getView().fit(extent, {duration: 1000, padding: [50, 50, 50, 50]});
-      }
-    }
-  });
 });
 
 let factorKey;
