@@ -13,6 +13,7 @@ import {Cluster, OSM, Vector as VectorSource} from '../src/ol/source.js';
 import {Polygon} from '../src/ol/geom.js';
 import {Tile as TileLayer, Vector as VectorLayer} from '../src/ol/layer.js';
 import {boundingExtent} from '../src/ol/extent.js';
+import {defaults as defaultInteractions} from '../src/ol/interaction.js';
 
 const distance = document.getElementById('distance');
 const distanceInfo = document.getElementById('distance-info');
@@ -136,6 +137,9 @@ const raster = new TileLayer({
 });
 
 const map = new Map({
+  interactions: defaultInteractions({
+    doubleClickZoom: false,
+  }),
   layers: [
     raster,
     new VectorLayer({
