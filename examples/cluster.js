@@ -10,9 +10,9 @@ import {
   Text,
 } from '../src/ol/style.js';
 import {Cluster, OSM, Vector as VectorSource} from '../src/ol/source.js';
-import {Polygon} from '../src/ol/geom.js';
 import {Tile as TileLayer, Vector as VectorLayer} from '../src/ol/layer.js';
 import {defaults as defaultInteractions} from '../src/ol/interaction.js';
+import {fromExtent as polygonFromExtent} from '../src/ol/geom/Polygon.js';
 
 const distance = document.getElementById('distance');
 const distanceInfo = document.getElementById('distance-info');
@@ -145,15 +145,7 @@ const map = new Map({
       source: new VectorSource({
         features: [
           new Feature({
-            geometry: new Polygon([
-              [
-                [e, e],
-                [e, -e],
-                [-e, -e],
-                [-e, e],
-                [e, e],
-              ],
-            ]),
+            geometry: polygonFromExtent([-e, -e, e, e]),
           }),
         ],
       }),
