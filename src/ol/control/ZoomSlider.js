@@ -251,8 +251,8 @@ class ZoomSlider extends Control {
         this.element.firstElementChild
       );
       this.getMap().getView().beginInteraction();
-      this.startX_ = event.clientX - parseFloat(element.style.left);
-      this.startY_ = event.clientY - parseFloat(element.style.top);
+      this.startX_ = event.pageX - parseFloat(element.style.left);
+      this.startY_ = event.pageY - parseFloat(element.style.top);
       this.dragging_ = true;
 
       if (this.dragListenerKeys_.length === 0) {
@@ -275,8 +275,8 @@ class ZoomSlider extends Control {
    */
   handleDraggerDrag_(event) {
     if (this.dragging_) {
-      const deltaX = event.clientX - this.startX_;
-      const deltaY = event.clientY - this.startY_;
+      const deltaX = event.pageX - this.startX_;
+      const deltaY = event.pageY - this.startY_;
       const relativePosition = this.getRelativePosition_(deltaX, deltaY);
       this.currentResolution_ =
         this.getResolutionForPosition_(relativePosition);
