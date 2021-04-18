@@ -6,8 +6,13 @@ import MapEventType from './MapEventType.js';
 import OverlayPositioning from './OverlayPositioning.js';
 import {CLASS_SELECTABLE} from './css.js';
 import {containsExtent} from './extent.js';
+import {
+  isDisplayedInDom,
+  outerSize,
+  removeChildren,
+  removeNode,
+} from './dom.js';
 import {listen, unlistenByKey} from './events.js';
-import {outerHeight, outerWidth, removeChildren, removeNode} from './dom.js';
 
 /**
  * @typedef {Object} Options
@@ -428,17 +433,20 @@ class Overlay extends BaseObject {
    */
   panIntoView(opt_panIntoViewOptions) {
     const map = this.getMap();
-
-    if (!map || !map.getTargetElement() || !this.get(Property.POSITION)) {
+    const element = this.getElement();
+    const targetElement = map.getTargetElement();
+    if (
+      !map ||
+      !element ||
+      !targetElement ||
+      !this.get(Property.POSITION) ||
+      !isDisplayedInDom(element)
+    ) {
       return;
     }
 
-    const mapRect = this.getRect(map.getTargetElement(), map.getSize());
-    const element = this.getElement();
-    const overlayRect = this.getRect(element, [
-      outerWidth(element),
-      outerHeight(element),
-    ]);
+    const mapRect = this.getRect(targetElement, map.getSize());
+    const overlayRect = this.getRect(element, outerSize(element));
 
     const panIntoViewOptions = opt_panIntoViewOptions || {};
 

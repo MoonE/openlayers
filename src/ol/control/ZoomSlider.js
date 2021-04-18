@@ -8,6 +8,7 @@ import PointerEventType from '../pointer/EventType.js';
 import {CLASS_CONTROL, CLASS_UNSELECTABLE} from '../css.js';
 import {clamp} from '../math.js';
 import {easeOut} from '../easing.js';
+import {innerSize, outerSize} from '../dom.js';
 import {listen, unlistenByKey} from '../events.js';
 import {stopPropagation} from '../events/Event.js';
 
@@ -105,12 +106,12 @@ class ZoomSlider extends Control {
     this.startY_;
 
     /**
-     * The calculated thumb size (border box plus margins).  Set when initSlider_
-     * is called.
+     * The offset to add to the mouse event coordinate to get the
+     * position for the thumb element.  Set when initSlider_ is called.
      * @type {import("../size.js").Size}
      * @private
      */
-    this.thumbSize_ = null;
+    this.eventPositionOffset_ = null;
 
     /**
      * Whether the slider is initialized.
@@ -183,37 +184,25 @@ class ZoomSlider extends Control {
    */
   initSlider_() {
     const container = this.element;
-    let containerWidth = container.offsetWidth;
-    let containerHeight = container.offsetHeight;
-    if (containerWidth === 0 && containerHeight === 0) {
+    const containerSize = innerSize(container);
+    if (!containerSize) {
       return (this.sliderInitialized_ = false);
     }
 
     const containerStyle = getComputedStyle(container);
-    containerWidth -=
-      parseFloat(containerStyle['paddingRight']) +
-      parseFloat(containerStyle['paddingLeft']);
-    containerHeight -=
-      parseFloat(containerStyle['paddingTop']) +
-      parseFloat(containerStyle['paddingBottom']);
     const thumb = /** @type {HTMLElement} */ (container.firstElementChild);
-    const thumbStyle = getComputedStyle(thumb);
-    const thumbWidth =
-      thumb.offsetWidth +
-      parseFloat(thumbStyle['marginRight']) +
-      parseFloat(thumbStyle['marginLeft']);
-    const thumbHeight =
-      thumb.offsetHeight +
-      parseFloat(thumbStyle['marginTop']) +
-      parseFloat(thumbStyle['marginBottom']);
-    this.thumbSize_ = [thumbWidth, thumbHeight];
+    const thumbSize = outerSize(thumb);
+    this.eventPositionOffset_ = [
+      parseFloat(containerStyle.paddingLeft) + (thumbSize[0] - 1) / 2,
+      parseFloat(containerStyle.paddingTop) + (thumbSize[1] - 1) / 2,
+    ];
 
-    if (containerWidth > containerHeight) {
+    if (containerSize[0] > containerSize[1]) {
       this.direction_ = Direction.HORIZONTAL;
-      this.widthLimit_ = containerWidth - thumbWidth;
+      this.widthLimit_ = containerSize[0] - thumbSize[0];
     } else {
       this.direction_ = Direction.VERTICAL;
-      this.heightLimit_ = containerHeight - thumbHeight;
+      this.heightLimit_ = containerSize[1] - thumbSize[1];
     }
     return (this.sliderInitialized_ = true);
   }
@@ -226,15 +215,13 @@ class ZoomSlider extends Control {
     const view = this.getMap().getView();
 
     const relativePosition = this.getRelativePosition_(
-      event.offsetX - this.thumbSize_[0] / 2,
-      event.offsetY - this.thumbSize_[1] / 2
+      event.offsetX - this.eventPositionOffset_[0],
+      event.offsetY - this.eventPositionOffset_[1]
     );
 
     const resolution = this.getResolutionForPosition_(relativePosition);
-    const zoom = view.getConstrainedZoom(view.getZoomForResolution(resolution));
-
     view.animateInternal({
-      zoom: zoom,
+      resolution: view.getConstrainedResolution(resolution),
       duration: this.duration_,
       easing: easeOut,
     });

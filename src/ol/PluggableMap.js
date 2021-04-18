@@ -34,8 +34,8 @@ import {
 } from './extent.js';
 import {fromUserCoordinate, toUserCoordinate} from './proj.js';
 import {hasArea} from './size.js';
+import {innerSize, removeNode} from './dom.js';
 import {listen, unlistenByKey} from './events.js';
-import {removeNode} from './dom.js';
 
 /**
  * State of the current frame. Only `pixelRatio`, `time` and `viewState` should
@@ -1562,36 +1562,16 @@ class PluggableMap extends BaseObject {
     const targetElement = this.getTargetElement();
 
     let size = undefined;
-    if (targetElement) {
-      const computedStyle = getComputedStyle(targetElement);
-      const width =
-        targetElement.offsetWidth -
-        parseFloat(computedStyle['borderLeftWidth']) -
-        parseFloat(computedStyle['paddingLeft']) -
-        parseFloat(computedStyle['paddingRight']) -
-        parseFloat(computedStyle['borderRightWidth']);
-      const height =
-        targetElement.offsetHeight -
-        parseFloat(computedStyle['borderTopWidth']) -
-        parseFloat(computedStyle['paddingTop']) -
-        parseFloat(computedStyle['paddingBottom']) -
-        parseFloat(computedStyle['borderBottomWidth']);
-      if (!isNaN(width) && !isNaN(height)) {
-        size = [width, height];
-        if (
-          !hasArea(size) &&
-          !!(
-            targetElement.offsetWidth ||
-            targetElement.offsetHeight ||
-            targetElement.getClientRects().length
-          )
-        ) {
-          // eslint-disable-next-line
-          console.warn(
-            "No map visible because the map container's width or height are 0."
-          );
-        }
-      }
+    if (
+      targetElement &&
+      (targetElement.offsetWidth || targetElement.offsetHeight) &&
+      (size = innerSize(targetElement)) &&
+      !hasArea(size)
+    ) {
+      // eslint-disable-next-line
+      console.warn(
+        "No map visible because the map container's width or height are 0."
+      );
     }
 
     this.setSize(size);

@@ -42,33 +42,69 @@ export function createCanvasContext2D(
 }
 
 /**
- * Get the current computed width for the given element including margin,
- * padding and border.
- * Equivalent to jQuery's `$(el).outerWidth(true)`.
- * @param {!HTMLElement} element Element.
- * @return {number} The width.
+ * Check if the element and all its parents are inside the DOM and all are
+ * set to be displayed.
+ * @param {HTMLElement} element The element to check.
+ * @return {boolean} Whether the element is rendered
  */
-export function outerWidth(element) {
-  let width = element.offsetWidth;
-  const style = getComputedStyle(element);
-  width += parseInt(style.marginLeft, 10) + parseInt(style.marginRight, 10);
-
-  return width;
+export function isDisplayedInDom(element) {
+  return element.getClientRects().length !== 0;
 }
 
 /**
- * Get the current computed height for the given element including margin,
- * padding and border.
- * Equivalent to jQuery's `$(el).outerHeight(true)`.
- * @param {!HTMLElement} element Element.
- * @return {number} The height.
+ * Get the current computed width and height for the given element excluding
+ * margin, padding and border.
+ * @param {HTMLElement} element The element to measure
+ * @return {import("./size.js").Size|undefined} An array with width and height in pixels (floats)
+ * or undefined if the element is currently not rendered.
  */
-export function outerHeight(element) {
-  let height = element.offsetHeight;
+export function innerSize(element) {
+  if (!isDisplayedInDom(element)) {
+    return undefined;
+  }
   const style = getComputedStyle(element);
-  height += parseInt(style.marginTop, 10) + parseInt(style.marginBottom, 10);
+  const rect = element.getBoundingClientRect();
+  const width =
+    rect.right -
+    rect.left -
+    parseFloat(style['paddingRight']) -
+    parseFloat(style['paddingLeft']) -
+    parseFloat(style['borderRightWidth']) -
+    parseFloat(style['borderLeftWidth']);
+  const height =
+    rect.bottom -
+    rect.top -
+    parseFloat(style['paddingTop']) -
+    parseFloat(style['paddingBottom']) -
+    parseFloat(style['borderTopWidth']) -
+    parseFloat(style['borderBottomWidth']);
+  return [width, height];
+}
 
-  return height;
+/**
+ * Get the current computed width and height for the given element including
+ * margin, padding and border.
+ * @param {HTMLElement} element The element to measure
+ * @return {import("./size.js").Size|undefined} An array with width and height in pixels
+ * (floats) or undefined if the element is currently not rendered.
+ */
+export function outerSize(element) {
+  if (!isDisplayedInDom(element)) {
+    return undefined;
+  }
+  const rect = element.getBoundingClientRect();
+  const style = getComputedStyle(element);
+  const width =
+    rect.right -
+    rect.left +
+    parseFloat(style.marginLeft) +
+    parseFloat(style.marginRight);
+  const height =
+    rect.bottom -
+    rect.top +
+    parseFloat(style.marginTop) +
+    parseFloat(style.marginBottom);
+  return [width, height];
 }
 
 /**
