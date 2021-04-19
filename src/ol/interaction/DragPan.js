@@ -165,24 +165,25 @@ class DragPan extends PointerInteraction {
    * @return {boolean} If the event was consumed.
    */
   handleDownEvent(mapBrowserEvent) {
-    if (this.targetPointers.length > 0 && this.condition_(mapBrowserEvent)) {
-      const map = mapBrowserEvent.map;
-      const view = map.getView();
-      this.lastCentroid = null;
-      // stop any current animation
-      if (view.getAnimating()) {
-        view.cancelAnimations();
-      }
-      if (this.kinetic_) {
-        this.kinetic_.begin();
-      }
-      // No kinetic as soon as more than one pointer on the screen is
-      // detected. This is to prevent nasty pans after pinch.
-      this.noKinetic_ = this.targetPointers.length > 1;
-      return true;
-    } else {
+    if (this.targetPointers.length === 0 || !this.condition_(mapBrowserEvent)) {
       return false;
     }
+    const map = mapBrowserEvent.map;
+    const view = map.getView();
+    this.lastPointersCount_ = this.targetPointers.length;
+    this.lastCentroid = centroidFromPointers(this.targetPointers);
+
+    // stop any current animation
+    if (view.getAnimating()) {
+      view.cancelAnimations();
+    }
+    if (this.kinetic_) {
+      this.kinetic_.begin();
+    }
+    // No kinetic as soon as more than one pointer on the screen is
+    // detected. This is to prevent nasty pans after pinch.
+    this.noKinetic_ = this.targetPointers.length > 1;
+    return true;
   }
 }
 
