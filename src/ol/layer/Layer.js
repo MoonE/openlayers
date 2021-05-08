@@ -150,12 +150,16 @@ class Layer extends BaseLayer {
   }
 
   /**
-   * @param {Array<import("./Layer.js").State>} [opt_states] Optional list of layer states (to be modified in place).
+   * @param {Array<import("./Layer.js").State>} states List of layer states (to be modified in place).
+   * @param {number} defaultZIndex Use this zIndex in case it is undefined.
    * @return {Array<import("./Layer.js").State>} List of layer states.
    */
-  getLayerStatesArray(opt_states) {
-    const states = opt_states ? opt_states : [];
-    states.push(this.getLayerState());
+  getLayerStatesArray(states, defaultZIndex) {
+    const state = this.getLayerState();
+    if (state.zIndex === undefined) {
+      state.zIndex = defaultZIndex;
+    }
+    states.push(state);
     return states;
   }
 

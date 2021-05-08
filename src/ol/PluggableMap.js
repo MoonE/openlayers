@@ -830,7 +830,7 @@ class PluggableMap extends BaseObject {
    * @return {boolean} Layers have sources that are still loading.
    */
   getLoading() {
-    const layerStatesArray = this.getLayerGroup().getLayerStatesArray();
+    const layerStatesArray = this.getLayerGroup().getLayerStatesArray([], 0);
     for (let i = 0, ii = layerStatesArray.length; i < ii; ++i) {
       const layer = layerStatesArray[i].layer;
       const source = /** @type {import("./layer/Layer.js").default} */ (layer).getSource();
@@ -1281,7 +1281,7 @@ class PluggableMap extends BaseObject {
    * Redraws all text after new fonts have loaded
    */
   redrawText() {
-    const layerStates = this.getLayerGroup().getLayerStatesArray();
+    const layerStates = this.getLayerGroup().getLayerStatesArray([], 0);
     for (let i = 0, ii = layerStates.length; i < ii; ++i) {
       const layer = layerStates[i].layer;
       if (layer.hasRenderer()) {
@@ -1372,7 +1372,7 @@ class PluggableMap extends BaseObject {
         ),
         index: this.frameIndex_++,
         layerIndex: 0,
-        layerStatesArray: this.getLayerGroup().getLayerStatesArray(),
+        layerStatesArray: this.getLayerGroup().getLayerStatesArray([], 0),
         pixelRatio: this.pixelRatio_,
         pixelToCoordinateTransform: this.pixelToCoordinateTransform_,
         postRenderFunctions: [],

@@ -111,8 +111,7 @@ class BaseLayer extends BaseObject {
     state.sourceState = this.getSourceState();
     state.visible = this.getVisible();
     state.extent = this.getExtent();
-    state.zIndex =
-      zIndex !== undefined ? zIndex : state.managed === false ? Infinity : 0;
+    state.zIndex = zIndex === undefined && !state.managed ? Infinity : zIndex;
     state.maxResolution = this.getMaxResolution();
     state.minResolution = Math.max(this.getMinResolution(), 0);
     state.minZoom = this.getMinZoom();
@@ -134,11 +133,12 @@ class BaseLayer extends BaseObject {
 
   /**
    * @abstract
-   * @param {Array<import("./Layer.js").State>} [opt_states] Optional list of layer
-   *     states (to be modified in place).
+   * @param {Array<import("./Layer.js").State>} states List of layer states
+   * (to be modified in place).
+   * @param {number} defaultZIndex Use this zIndex in case it is undefined.
    * @return {Array<import("./Layer.js").State>} List of layer states.
    */
-  getLayerStatesArray(opt_states) {
+  getLayerStatesArray(states, defaultZIndex) {
     return abstract();
   }
 
