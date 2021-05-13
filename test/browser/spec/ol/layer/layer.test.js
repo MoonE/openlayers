@@ -408,7 +408,7 @@ describe('ol.layer.Layer', function () {
       layer.setZIndex(10);
       expect(layer.getLayerState()).to.eql({
         layer: layer,
-        opacity: 0.33,
+        opacity: 1 / 3,
         visible: false,
         managed: true,
         sourceState: 'ready',
