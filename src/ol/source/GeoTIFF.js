@@ -100,7 +100,7 @@ function getMinForDataType(array) {
     return -2147483648;
   }
   if (array instanceof Float32Array) {
-    return 1.2e-38;
+    return -3.4028234663852886e38;
   }
   return 0;
 }
@@ -132,7 +132,7 @@ function getMaxForDataType(array) {
     return 4294967295;
   }
   if (array instanceof Float32Array) {
-    return 3.4e38;
+    return 3.4028234663852886e38;
   }
   return 255;
 }
