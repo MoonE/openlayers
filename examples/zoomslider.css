@@ -11,9 +11,9 @@
   Zoom control top: 0.5em
   Zoom control padding: 2px
   Zoom in button margin top: 1px
-  Zoom in button height: font size 1.14em * 1.375 height
+  Zoom in button height: font size 1.375em height
   */
-  top: calc(0.5em + 2px + 1px + 1.14 * 1.375em);
+  top: calc(0.5em + 2px + 1px + 1.375em);
 }
 
 #map2 .ol-touch .ol-zoom .ol-zoom-out {
