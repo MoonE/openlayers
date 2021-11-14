@@ -79,7 +79,7 @@ import {getWorldsAway} from './coordinate.js';
 /**
  * A projection as {@link module:ol/proj/Projection}, SRS identifier
  * string or undefined.
- * @typedef {Projection|string|undefined} ProjectionLike
+ * @typedef {Projection|string} ProjectionLike
  * @api
  */
 
@@ -158,13 +158,15 @@ export function addProjections(projections) {
  * @param {ProjectionLike} projectionLike Either a code string which is
  *     a combination of authority and identifier such as "EPSG:4326", or an
  *     existing projection object, or undefined.
- * @return {Projection} Projection object, or null if not in list.
+ * @return {Projection|undefined} Projection object, or undefined if not in list.
  * @api
  */
 export function get(projectionLike) {
-  return typeof projectionLike === 'string'
-    ? getProj(/** @type {string} */ (projectionLike))
-    : /** @type {Projection} */ (projectionLike) || null;
+  return (
+    (typeof projectionLike === 'string'
+      ? getProj(projectionLike)
+      : projectionLike) || undefined
+  );
 }
 
 /**
@@ -533,9 +535,9 @@ export function transformWithProjections(
 }
 
 /**
- * @type {?Projection}
+ * @type {Projection|undefined}
  */
-let userProjection = null;
+let userProjection;
 
 /**
  * Set the projection for coordinates supplied from and returned by API methods.
@@ -553,14 +555,14 @@ export function setUserProjection(projection) {
  * be considered experimental.
  */
 export function clearUserProjection() {
-  userProjection = null;
+  userProjection = undefined;
 }
 
 /**
  * Get the projection for coordinates supplied from and returned by API methods.
  * Note that this method is not yet a part of the stable API.  Support for user
  * projections is not yet complete and should be considered experimental.
- * @return {?Projection} The user projection (or null if not set).
+ * @return {Projection|undefined} The user projection (or undefined if not set).
  */
 export function getUserProjection() {
   return userProjection;

@@ -270,10 +270,8 @@ class Circle extends SimpleGeometry {
  * correspond to the shape that would be obtained by transforming every point
  * of the original circle.
  *
- * @param {import("../proj.js").ProjectionLike} source The current projection.  Can be a
- *     string identifier or a {@link module:ol/proj/Projection~Projection} object.
- * @param {import("../proj.js").ProjectionLike} destination The desired projection.  Can be a
- *     string identifier or a {@link module:ol/proj/Projection~Projection} object.
+ * @param {import("../proj.js").ProjectionLike} source The current projection.
+ * @param {import("../proj.js").ProjectionLike} destination The desired projection.
  * @return {Circle} This geometry.  Note that original geometry is
  *     modified in place.
  * @function

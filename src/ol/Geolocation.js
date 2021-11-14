@@ -363,7 +363,7 @@ class Geolocation extends BaseObject {
 
   /**
    * Set the projection to use for transforming the coordinates.
-   * @param {import("./proj.js").ProjectionLike} projection The projection the position is
+   * @param {import("./proj.js").ProjectionLike|undefined} projection The projection the position is
    *     reported in.
    * @observable
    * @api

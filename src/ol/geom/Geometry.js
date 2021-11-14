@@ -285,10 +285,8 @@ class Geometry extends BaseObject {
    * If you do not want the geometry modified in place, first `clone()` it and
    * then use this function on the clone.
    *
-   * @param {import("../proj.js").ProjectionLike} source The current projection.  Can be a
-   *     string identifier or a {@link module:ol/proj/Projection~Projection} object.
-   * @param {import("../proj.js").ProjectionLike} destination The desired projection.  Can be a
-   *     string identifier or a {@link module:ol/proj/Projection~Projection} object.
+   * @param {import("../proj.js").ProjectionLike} source The current projection.
+   * @param {import("../proj.js").ProjectionLike} destination The desired projection.
    * @return {Geometry} This geometry.  Note that original geometry is
    *     modified in place.
    * @api

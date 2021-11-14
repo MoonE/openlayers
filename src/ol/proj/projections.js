@@ -17,13 +17,13 @@ export function clear() {
 /**
  * Get a cached projection by code.
  * @param {string} code The code for the projection.
- * @return {import("./Projection.js").default} The projection (if cached).
+ * @return {import("./Projection.js").default|undefined} The projection (if cached).
  */
 export function get(code) {
   return (
     cache[code] ||
     cache[code.replace(/urn:(x-)?ogc:def:crs:EPSG:(.*:)?(\w+)$/, 'EPSG:$3')] ||
-    null
+    undefined
   );
 }
 

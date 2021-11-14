@@ -246,8 +246,8 @@ class MousePosition extends Control {
 
   /**
    * Set the projection that is used to report the mouse position.
-   * @param {import("../proj.js").ProjectionLike} projection The projection to report mouse
-   *     position in.
+   * @param {import("../proj.js").ProjectionLike} [projection] The projection to report mouse
+   *     position in. Call without parameters to reset to the view projection.
    * @observable
    * @api
    */
