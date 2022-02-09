@@ -16,11 +16,11 @@ let withCredentials = false;
  * load features.
  *
  * This function takes up to 5 arguments. These are an {@link module:ol/extent~Extent} representing
- * the area to be loaded, a `{number}` representing the resolution (map units per pixel), an
+ * the area to be loaded, a `number` representing the resolution (map units per pixel), an
  * {@link module:ol/proj/Projection} for the projection, an optional success callback that should get
  * the loaded features passed as an argument and an optional failure callback with no arguments. If
- * the callbacks are not used, the corresponding vector source will not fire `'featuresloadend'` and
- * `'featuresloaderror'` events. `this` within the function is bound to the
+ * the callbacks are not used, the corresponding vector source will not fire `featuresloadend` and
+ * `featuresloaderror` events. `this` within the function is bound to the
  * {@link module:ol/source/Vector} it's called from.
  *
  * The function is responsible for loading the features and adding them to the
@@ -39,9 +39,9 @@ let withCredentials = false;
  * get the url to load features from.
  *
  * This function takes an {@link module:ol/extent~Extent} representing the area
- * to be loaded, a `{number}` representing the resolution (map units per pixel)
+ * to be loaded, a `number` representing the resolution (map units per pixel)
  * and an {@link module:ol/proj/Projection} for the projection  as
- * arguments and returns a `{string}` representing the URL.
+ * arguments and returns a `string` representing the URL.
  * @typedef {function(import("./extent.js").Extent, number, import("./proj/Projection.js").default): string} FeatureUrlFunction
  * @api
  */

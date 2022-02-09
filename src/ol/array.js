@@ -63,10 +63,10 @@ export function includes(arr, obj) {
  * {@link module:ol/tilegrid/TileGrid~TileGrid#getZForResolution} can use a function
  * of this type to determine which nearest resolution to use.
  *
- * This function takes a `{number}` representing a value between two array entries,
- * a `{number}` representing the value of the nearest higher entry and
- * a `{number}` representing the value of the nearest lower entry
- * as arguments and returns a `{number}`. If a negative number or zero is returned
+ * This function takes a `number` representing a value between two array entries,
+ * a `number` representing the value of the nearest higher entry and
+ * a `number` representing the value of the nearest lower entry
+ * as arguments and returns a `number`. If a negative number or zero is returned
  * the lower value will be used, if a positive number is returned the higher value
  * will be used.
  * @typedef {function(number, number, number): number} NearestDirectionFunction

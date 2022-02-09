@@ -12,10 +12,10 @@ import {
 } from '../extent.js';
 
 /**
- * A function returning the canvas element (`{HTMLCanvasElement}`)
+ * A function returning the `HTMLCanvasElement`
  * used by the source as an image. The arguments passed to the function are:
- * {@link module:ol/extent~Extent} the image extent, `{number}` the image resolution,
- * `{number}` the pixel ratio of the map, {@link module:ol/size~Size} the image size,
+ * {@link module:ol/extent~Extent} the image extent, `number` the image resolution,
+ * `number` the pixel ratio of the map, {@link module:ol/size~Size} the image size,
  * and {@link module:ol/proj/Projection} the image projection. The canvas returned by
  * this function is cached by the source. The this keyword inside the function
  * references the {@link module:ol/source/ImageCanvas}.
@@ -29,9 +29,9 @@ import {
  * @property {import("./Source.js").AttributionLike} [attributions] Attributions.
  * @property {FunctionType} [canvasFunction] Canvas function.
  * The function returning the canvas element used by the source
- * as an image. The arguments passed to the function are: `{import("../extent.js").Extent}` the
- * image extent, `{number}` the image resolution, `{number}` the pixel ratio of the map,
- * `{import("../size.js").Size}` the image size, and `{import("../proj/Projection.js").Projection}` the image
+ * as an image. The arguments passed to the function are: {@link import("../extent.js").Extent} the
+ * image extent, `number` the image resolution, `number` the pixel ratio of the map,
+ * {@link import("../size.js").Size} the image size, and {@link import("../proj/Projection.js").Projection} the image
  * projection. The canvas returned by this function is cached by the source. If
  * the value returned by the function is later changed then
  * `changed` should be called on the source for the source to

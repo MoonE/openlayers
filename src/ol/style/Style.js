@@ -9,7 +9,7 @@ import Stroke from './Stroke.js';
 import {assert} from '../asserts.js';
 
 /**
- * A function that takes an {@link module:ol/Feature} and a `{number}`
+ * A function that takes an {@link module:ol/Feature} and a `number`
  * representing the view's resolution. The function should return a
  * {@link module:ol/style/Style~Style} or an array of them. This way e.g. a
  * vector layer can be styled. If the function returns `undefined`, the

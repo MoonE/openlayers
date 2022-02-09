@@ -325,7 +325,8 @@ export function createStyleFunction(obj) {
     if (Array.isArray(obj)) {
       styles = obj;
     } else {
-      assert(typeof (/** @type {?} */ (obj).getZIndex) === 'function', 41); // Expected an `import("./style/Style.js").Style` or an array of `import("./style/Style.js").Style`
+      // Expected an `import("./style/Style.js").Style` or an array of `import("./style/Style.js").Style`
+      assert(typeof (/** @type {?} */ (obj).getZIndex) === 'function', 41);
       const style = /** @type {import("./style/Style.js").default} */ (obj);
       styles = [style];
     }

@@ -1738,10 +1738,11 @@ function createOptionsInternal(options) {
     if (Array.isArray(options.controls)) {
       controls = new Collection(options.controls.slice());
     } else {
+      // Expected `controls` to be an array or an `import("./Collection.js").Collection`
       assert(
         typeof (/** @type {?} */ (options.controls).getArray) === 'function',
         47
-      ); // Expected `controls` to be an array or an `import("./Collection.js").Collection`
+      );
       controls = /** @type {Collection} */ (options.controls);
     }
   }
@@ -1751,11 +1752,12 @@ function createOptionsInternal(options) {
     if (Array.isArray(options.interactions)) {
       interactions = new Collection(options.interactions.slice());
     } else {
+      // Expected `interactions` to be an array or an `import("./Collection.js").Collection`
       assert(
         typeof (/** @type {?} */ (options.interactions).getArray) ===
           'function',
         48
-      ); // Expected `interactions` to be an array or an `import("./Collection.js").Collection`
+      );
       interactions = /** @type {Collection} */ (options.interactions);
     }
   }
@@ -1765,10 +1767,11 @@ function createOptionsInternal(options) {
     if (Array.isArray(options.overlays)) {
       overlays = new Collection(options.overlays.slice());
     } else {
+      // Expected `overlays` to be an array or an `import("./Collection.js").Collection`
       assert(
         typeof (/** @type {?} */ (options.overlays).getArray) === 'function',
         49
-      ); // Expected `overlays` to be an array or an `import("./Collection.js").Collection`
+      );
       overlays = options.overlays;
     }
   } else {

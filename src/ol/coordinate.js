@@ -13,7 +13,7 @@ import {padNumber} from './string.js';
 
 /**
  * A function that takes a {@link module:ol/coordinate~Coordinate} and
- * transforms it into a `{string}`.
+ * transforms it into a `string`.
  *
  * @typedef {function((Coordinate|undefined)): string} CoordinateFormat
  * @api

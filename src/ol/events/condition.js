@@ -7,8 +7,8 @@ import {MAC, WEBKIT} from '../has.js';
 import {assert} from '../asserts.js';
 
 /**
- * A function that takes an {@link module:ol/MapBrowserEvent} and returns a
- * `{boolean}`. If the condition is met, true should be returned.
+ * A function that takes an {@link module:ol/MapBrowserEvent~MapBrowserEvent} and returns a
+ * `boolean`. If the condition is met, true should be returned.
  *
  * @typedef {function(this: ?, import("../MapBrowserEvent.js").default): boolean} Condition
  */

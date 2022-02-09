@@ -382,7 +382,7 @@ function createStyleDefaults() {
 let TEXTAREA;
 
 /**
- * A function that takes a url `{string}` and returns a url `{string}`.
+ * A function that takes a url `string` and returns a url `string`.
  * Might be used to change an icon path or to substitute a
  * data url obtained from a KMZ array buffer.
  *
