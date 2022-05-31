@@ -743,7 +743,8 @@ class CanvasTileLayerRenderer extends CanvasLayerRenderer {
           if (currentZ - z <= preload) {
             ++tileCount;
             tile = tileSource.getTile(z, x, y, pixelRatio, projection);
-            if (tile.getState() == TileState.IDLE) {
+            const state = tile.getState();
+            if (state == TileState.IDLE || state == TileState.LOADING) {
               wantedTiles[tile.getKey()] = true;
               if (!tileQueue.isKeyQueued(tile.getKey())) {
                 tileQueue.enqueue([

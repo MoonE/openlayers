@@ -59,12 +59,41 @@ class TileQueue extends PriorityQueue {
    * @return {boolean} The element was added to the queue.
    */
   enqueue(element) {
+    const tile = element[0];
+    const alreadyLoading = tile.getState() === TileState.LOADING;
+    if (alreadyLoading) {
+      const key = tile.getKey();
+      if (!(key in this.tilesLoadingKeys_)) {
+        ++this.tilesLoading_;
+        this.tilesLoadingKeys_[key] = tile;
+        tile.addEventListener(EventType.CHANGE, this.boundHandleTileChange_);
+      }
+      return false;
+    }
     const added = super.enqueue(element);
     if (added) {
-      const tile = element[0];
       tile.addEventListener(EventType.CHANGE, this.boundHandleTileChange_);
     }
     return added;
+  }
+
+  /**
+   * @param {string} key Key.
+   * @return {boolean} Is key queued.
+   */
+  isKeyQueued(key) {
+    return key in this.tilesLoadingKeys_ || super.isKeyQueued(key);
+  }
+
+  /**
+   * @param {Array} element Element.
+   * @return {boolean} Is queued.
+   */
+  isQueued(element) {
+    const key = /** @type {import("./Tile.js").default} */ (
+      element[0]
+    ).getKey();
+    return key in this.tilesLoadingKeys_ || super.isQueued(element);
   }
 
   /**
@@ -103,20 +132,15 @@ class TileQueue extends PriorityQueue {
    * @param {number} maxNewLoads Maximum number of new tiles to load.
    */
   loadMoreTiles(maxTotalLoading, maxNewLoads) {
-    let newLoads = 0;
     let state, tile, tileKey;
-    while (
-      this.tilesLoading_ < maxTotalLoading &&
-      newLoads < maxNewLoads &&
-      this.getCount() > 0
-    ) {
+    const limit = Math.min(maxTotalLoading, this.tilesLoading_ + maxNewLoads);
+    while (this.tilesLoading_ < limit && !this.isEmpty()) {
       tile = /** @type {import("./Tile.js").default} */ (this.dequeue()[0]);
       tileKey = tile.getKey();
       state = tile.getState();
       if (state === TileState.IDLE && !(tileKey in this.tilesLoadingKeys_)) {
         this.tilesLoadingKeys_[tileKey] = true;
         ++this.tilesLoading_;
-        ++newLoads;
         tile.load();
       }
     }
