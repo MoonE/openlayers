@@ -634,6 +634,12 @@ class RasterSource extends ImageSource {
     this.renderedImageCanvas_ = null;
 
     /**
+     * @type {number}
+     * @private
+     */
+    this.requestedRevision_ = 0;
+
+    /**
      * The most recently rendered revision.
      * @type {number}
      * @private
@@ -784,11 +790,10 @@ class RasterSource extends ImageSource {
       }
     }
 
-    if (
-      !this.renderedImageCanvas_ ||
-      this.getRevision() !== this.renderedRevision_
-    ) {
+    const revision = this.getRevision();
+    if (!this.renderedImageCanvas_ || revision > this.requestedRevision_) {
       this.processSources_();
+      this.requestedRevision_ = revision;
     }
 
     frameState.tileQueue.loadMoreTiles(16, 16);
@@ -824,19 +829,20 @@ class RasterSource extends ImageSource {
     this.processor_.process(
       imageDatas,
       data,
-      this.onWorkerComplete_.bind(this, frameState)
+      this.onWorkerComplete_.bind(this, frameState, this.requestedRevision_)
     );
   }
 
   /**
    * Called when pixel processing is complete.
    * @param {import("../Map.js").FrameState} frameState The frame state.
+   * @param {number} revision The rendered revision
    * @param {Error} err Any error during processing.
    * @param {ImageData} output The output image data.
    * @param {Object|Array<Object>} data The user data (or an array if more than one thread).
    * @private
    */
-  onWorkerComplete_(frameState, err, output, data) {
+  onWorkerComplete_(frameState, revision, err, output, data) {
     if (err || !output) {
       return;
     }
@@ -867,8 +873,9 @@ class RasterSource extends ImageSource {
     }
     context.putImageData(output, 0, 0);
 
+    ++this.requestedRevision_;
+    this.renderedRevision_ = revision + 1;
     this.changed();
-    this.renderedRevision_ = this.getRevision();
 
     this.dispatchEvent(
       new RasterSourceEvent(RasterEventType.AFTEROPERATIONS, frameState, data)
