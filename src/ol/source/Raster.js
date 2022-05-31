@@ -584,18 +584,18 @@ class RasterSource extends ImageSource {
      */
     this.layers_ = createLayers(options.sources);
 
-    const changed = this.changed.bind(this);
+    /** @private */
+    this.boundChanged_ = this.changed.bind(this);
+
     for (let i = 0, ii = this.layers_.length; i < ii; ++i) {
-      this.layers_[i].addEventListener(EventType.CHANGE, changed);
+      this.layers_[i].addEventListener(EventType.CHANGE, this.boundChanged_);
     }
 
     /**
      * @private
      * @type {import("../TileQueue.js").default}
      */
-    this.tileQueue_ = new TileQueue(function () {
-      return 1;
-    }, this.changed.bind(this));
+    this.tileQueue_ = new TileQueue(() => 1, this.boundChanged_);
 
     /**
      * The most recently requested frame state.
@@ -614,8 +614,9 @@ class RasterSource extends ImageSource {
     /**
      * The most recently rendered revision.
      * @type {number}
+     * @private
      */
-    this.renderedRevision_;
+    this.renderedRevision_ = 0;
 
     /**
      * @private
@@ -702,25 +703,17 @@ class RasterSource extends ImageSource {
    * @private
    */
   updateFrameState_(extent, resolution, projection) {
-    const frameState = /** @type {import("../Map.js").FrameState} */ (
-      Object.assign({}, this.frameState_)
-    );
-
-    frameState.viewState = /** @type {import("../View.js").State} */ (
-      Object.assign({}, frameState.viewState)
-    );
-
-    const center = getCenter(extent);
-
+    const frameState = Object.assign({}, this.frameState_);
     frameState.extent = extent.slice();
     frameState.size[0] = Math.round(getWidth(extent) / resolution);
     frameState.size[1] = Math.round(getHeight(extent) / resolution);
     frameState.time = Date.now();
 
-    const viewState = frameState.viewState;
-    viewState.center = center;
+    const viewState = Object.assign({}, frameState.viewState);
+    viewState.center = getCenter(extent);
     viewState.projection = projection;
     viewState.resolution = resolution;
+    frameState.viewState = viewState;
     return frameState;
   }
 
@@ -779,7 +772,7 @@ class RasterSource extends ImageSource {
     frameState.tileQueue.loadMoreTiles(16, 16);
 
     if (frameState.animate) {
-      requestAnimationFrame(this.changed.bind(this));
+      requestAnimationFrame(this.boundChanged_);
     }
 
     return this.renderedImageCanvas_;
@@ -796,11 +789,10 @@ class RasterSource extends ImageSource {
     for (let i = 0; i < len; ++i) {
       frameState.layerIndex = i;
       const imageData = getImageData(this.layers_[i], frameState);
-      if (imageData) {
-        imageDatas[i] = imageData;
-      } else {
+      if (!imageData) {
         return;
       }
+      imageDatas[i] = imageData;
     }
 
     const data = {};
@@ -860,7 +852,7 @@ class RasterSource extends ImageSource {
       new RasterSourceEvent(RasterEventType.AFTEROPERATIONS, frameState, data)
     );
     if (frameState.animate) {
-      requestAnimationFrame(this.changed.bind(this));
+      requestAnimationFrame(this.boundChanged_);
     }
   }
 
