@@ -60,21 +60,20 @@ class TileQueue extends PriorityQueue {
    */
   enqueue(element) {
     const tile = element[0];
-    const alreadyLoading = tile.getState() === TileState.LOADING;
-    if (alreadyLoading) {
+    if (tile.getState() === TileState.LOADING) {
       const key = tile.getKey();
-      if (!(key in this.tilesLoadingKeys_)) {
-        ++this.tilesLoading_;
-        this.tilesLoadingKeys_[key] = tile;
-        tile.addEventListener(EventType.CHANGE, this.boundHandleTileChange_);
+      if (key in this.tilesLoadingKeys_) {
+        return false;
       }
+      ++this.tilesLoading_;
+      this.tilesLoadingKeys_[key] = tile;
+      tile.addEventListener(EventType.CHANGE, this.boundHandleTileChange_);
+      return true;
+    }
+    if (!super.enqueue(element)) {
       return false;
     }
-    const added = super.enqueue(element);
-    if (added) {
-      tile.addEventListener(EventType.CHANGE, this.boundHandleTileChange_);
-    }
-    return added;
+    tile.addEventListener(EventType.CHANGE, this.boundHandleTileChange_);
   }
 
   /**
