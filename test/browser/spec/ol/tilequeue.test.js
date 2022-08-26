@@ -6,7 +6,7 @@ import TileState from '../../../../src/ol/TileState.js';
 import {DROP} from '../../../../src/ol/structs/PriorityQueue.js';
 import {defaultImageLoadFunction} from '../../../../src/ol/source/Image.js';
 
-describe('ol.TileQueue', function () {
+describe('ol/TileQueue', function () {
   function addRandomPriorityTiles(tq, num) {
     let i, tile, priority;
     for (i = 0; i < num; i++) {
@@ -99,6 +99,31 @@ describe('ol.TileQueue', function () {
 
         done();
       }
+    });
+    it('works when a tile in state LOADING is added', function (done) {
+      const q1Cb = sinon.spy();
+      const q2Cb = sinon.spy();
+      const q1 = new TileQueue(noop, q1Cb);
+      const q2 = new TileQueue(noop, q2Cb);
+
+      function finish() {
+        expect(q1Cb.called).to.be(true);
+        expect(q2Cb.called).to.be(true);
+        done();
+      }
+
+      const tile = createImageTile();
+      tile.addEventListener('change', function processed() {
+        const state = tile.getState();
+        if (state === TileState.LOADED || state === TileState.ERROR) {
+          tile.removeEventListener('change', processed);
+          setTimeout(finish, 0);
+        }
+      });
+      q1.enqueue([tile]);
+      q1.loadMoreTiles(1, 1);
+
+      q2.enqueue([tile]);
     });
   });
 
