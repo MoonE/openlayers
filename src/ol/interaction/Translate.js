@@ -5,6 +5,7 @@ import Collection from '../Collection.js';
 import Event from '../events/Event.js';
 import InteractionProperty from './Property.js';
 import PointerInteraction from './Pointer.js';
+import VectorTileLayer from '../layer/VectorTile.js';
 import {TRUE} from '../functions.js';
 import {always} from '../events/condition.js';
 
@@ -37,7 +38,7 @@ const TranslateEventType = {
  * {@link module:ol/render/Feature~RenderFeature} and an
  * {@link module:ol/layer/Layer~Layer} and returns `true` if the feature may be
  * translated or `false` otherwise.
- * @typedef {function(import("../Feature.js").FeatureLike, import("../layer/Layer.js").default<import("../source/Source").default>):boolean} FilterFunction
+ * @typedef {function(import("../Feature.js").default, import("../layer/Layer.js").default<import("../source/Source").default>):boolean} FilterFunction
  */
 
 /**
@@ -180,9 +181,7 @@ class Translate extends PointerInteraction {
         layerFilter = options.layers;
       } else {
         const layers = options.layers;
-        layerFilter = function (layer) {
-          return layers.includes(layer);
-        };
+        layerFilter = (layer) => layers.includes(layer);
       }
     } else {
       layerFilter = TRUE;
@@ -192,7 +191,8 @@ class Translate extends PointerInteraction {
      * @private
      * @type {function(import("../layer/Layer.js").default<import("../source/Source").default>): boolean}
      */
-    this.layerFilter_ = layerFilter;
+    this.layerFilter_ = (layer) =>
+      !(layer instanceof VectorTileLayer) && layerFilter(layer);
 
     /**
      * @private
