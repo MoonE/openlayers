@@ -4,7 +4,10 @@ import WebGLRenderTarget from '../../../../../src/ol/webgl/RenderTarget.js';
 import {assertArrayLikeEqual} from '../../../../util/equal.js';
 
 describe('ol.webgl.RenderTarget', function () {
-  let helper, testImage_4x4;
+  /** @type {WebGLHelper} */
+  let helper;
+  /** @type {ImageData} */
+  let testImage_4x4;
 
   beforeEach(function () {
     helper = new WebGLHelper();
@@ -131,13 +134,22 @@ describe('ol.webgl.RenderTarget', function () {
       data = rt.readPixel(3, -1);
       assertArrayLikeEqual(data, [0, 0, 0, 0]);
 
-      data = rt.readPixel(6, 2);
+      data = rt.readPixel(4, 2);
       assertArrayLikeEqual(data, [0, 0, 0, 0]);
 
-      data = rt.readPixel(2, 7);
+      data = rt.readPixel(2, 4);
       assertArrayLikeEqual(data, [0, 0, 0, 0]);
+
+      data = rt.readPixel(0, 0);
+      assert.notDeepEqual(data, [0, 0, 0, 0]);
 
       data = rt.readPixel(2, 3);
+      assert.notDeepEqual(data, [0, 0, 0, 0]);
+
+      data = rt.readPixel(1, 3.5);
+      assert.notDeepEqual(data, [0, 0, 0, 0]);
+
+      data = rt.readPixel(3.5, 1);
       assert.notDeepEqual(data, [0, 0, 0, 0]);
     });
   });
