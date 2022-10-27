@@ -652,7 +652,10 @@ class WebGLPointsLayerRenderer extends WebGLLayerRenderer {
       coordinate.slice(),
     );
 
-    const data = this.hitRenderTarget_.readPixel(pixel[0] / 2, pixel[1] / 2);
+    const data = this.hitRenderTarget_.readPixel(
+      Math.round(pixel[0]) / 2,
+      Math.round(pixel[1]) / 2
+    );
     const color = [data[0] / 255, data[1] / 255, data[2] / 255, data[3] / 255];
     const index = colorDecodeId(color);
     const opacity = this.renderInstructions_[index];
@@ -681,8 +684,8 @@ class WebGLPointsLayerRenderer extends WebGLLayerRenderer {
 
     if (forHitDetection) {
       this.hitRenderTarget_.setSize([
-        Math.floor(frameState.size[0] / 2),
-        Math.floor(frameState.size[1] / 2),
+        Math.ceil(frameState.size[0] / 2),
+        Math.ceil(frameState.size[1] / 2),
       ]);
       this.helper.prepareDrawToRenderTarget(
         frameState,
