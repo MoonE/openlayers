@@ -4,121 +4,116 @@ import Point from '../src/ol/geom/Point.js';
 import VectorLayer from '../src/ol/layer/Vector.js';
 import VectorSource from '../src/ol/source/Vector.js';
 import View from '../src/ol/View.js';
-import {Fill, RegularShape, Stroke, Style} from '../src/ol/style.js';
-
-const stroke = new Stroke({color: 'black', width: 2});
-const fill = new Fill({color: 'red'});
 
 const styles = {
-  'square': new Style({
-    image: new RegularShape({
-      fill: fill,
-      stroke: stroke,
-      points: 4,
-      radius: 10,
-      angle: Math.PI / 4,
-    }),
-  }),
-  'rectangle': new Style({
-    image: new RegularShape({
-      fill: fill,
-      stroke: stroke,
-      radius: 10 / Math.SQRT2,
-      radius2: 10,
-      points: 4,
-      angle: 0,
-      scale: [1, 0.5],
-    }),
-  }),
-  'triangle': new Style({
-    image: new RegularShape({
-      fill: fill,
-      stroke: stroke,
-      points: 3,
-      radius: 10,
-      rotation: Math.PI / 4,
-      angle: 0,
-    }),
-  }),
-  'star': new Style({
-    image: new RegularShape({
-      fill: fill,
-      stroke: stroke,
-      points: 5,
-      radius: 10,
-      radius2: 4,
-      angle: 0,
-    }),
-  }),
-  'cross': new Style({
-    image: new RegularShape({
-      fill: fill,
-      stroke: stroke,
-      points: 4,
-      radius: 10,
-      radius2: 0,
-      angle: 0,
-    }),
-  }),
-  'x': new Style({
-    image: new RegularShape({
-      fill: fill,
-      stroke: stroke,
-      points: 4,
-      radius: 10,
-      radius2: 0,
-      angle: Math.PI / 4,
-    }),
-  }),
+  'square': {
+    'shape-fill-color': ['var', 'color'],
+    'shape-stroke-width': 2,
+    'shape-stroke-color': 'black',
+    'shape-points': 4,
+    'shape-radius': 10,
+    'shape-angle': Math.PI / 4,
+  },
+  'rectangle': {
+    'shape-fill-color': 'red',
+    'shape-stroke-width': 2,
+    'shape-stroke-color': 'black',
+    'shape-radius': 10 / Math.SQRT2,
+    'shape-radius2': 10,
+    'shape-points': 4,
+    'shape-angle': 0,
+    'shape-scale': [1, 0.5],
+  },
+  'triangle': {
+    'shape-fill-color': 'red',
+    'shape-stroke-width': 2,
+    'shape-stroke-color': 'black',
+    'shape-points': 3,
+    'shape-radius': 10,
+    'shape-rotation': Math.PI / 4,
+    'shape-angle': 0,
+  },
+  'star': {
+    'shape-fill-color': 'red',
+    'shape-stroke-width': 2,
+    'shape-stroke-color': 'black',
+    'shape-points': 5,
+    'shape-radius': 10,
+    'shape-radius2': 4,
+    'shape-rotation': 4,
+    'shape-angle': 0,
+  },
+  'cross': {
+    'shape-fill-color': 'red',
+    'shape-stroke-width': 2,
+    'shape-stroke-color': 'black',
+    'shape-points': 4,
+    'shape-radius': 10,
+    'shape-radius2': 0,
+    'shape-rotation': 0,
+    'shape-angle': 0,
+  },
+  'x': {
+    'shape-fill-color': 'red',
+    'shape-stroke-width': 2,
+    'shape-stroke-color': 'black',
+    'shape-points': 4,
+    'shape-radius': 10,
+    'shape-radius2': 0,
+    'shape-rotation': 0,
+    'shape-angle': Math.PI / 4,
+  },
   'stacked': [
-    new Style({
-      image: new RegularShape({
-        fill: fill,
-        stroke: stroke,
-        points: 4,
-        radius: 5,
-        angle: Math.PI / 4,
-        displacement: [0, 10],
-      }),
-    }),
-    new Style({
-      image: new RegularShape({
-        fill: fill,
-        stroke: stroke,
-        points: 4,
-        radius: 10,
-        angle: Math.PI / 4,
-      }),
-    }),
+    {
+      'shape-fill-color': 'red',
+      'shape-stroke-width': 2,
+      'shape-stroke-color': 'black',
+      'shape-points': 4,
+      'shape-radius': 5,
+      'shape-angle': Math.PI / 4,
+      'shape-displacement': [0, 10],
+    },
+    {
+      'shape-fill-color': 'red',
+      'shape-stroke-width': 2,
+      'shape-stroke-color': 'black',
+      'shape-points': 4,
+      'shape-radius': 10,
+      'shape-angle': Math.PI / 4,
+    },
   ],
 };
 
-const styleKeys = [
-  'x',
-  'cross',
-  'star',
-  'triangle',
-  'square',
-  'rectangle',
-  'stacked',
-];
-const count = 250;
+const styleKeys = Object.keys(styles);
+const count = 5000;
 const features = new Array(count);
 const e = 4500000;
 for (let i = 0; i < count; ++i) {
   const coordinates = [2 * e * Math.random() - e, 2 * e * Math.random() - e];
+  const styleIndex = Math.floor(Math.random() * (i % styleKeys.length));
   features[i] = new Feature(new Point(coordinates));
-  features[i].setStyle(
-    styles[styleKeys[Math.floor(Math.random() * styleKeys.length)]]
-  );
+  features[i].set('shape', styleKeys[styleIndex], true);
 }
 
-const source = new VectorSource({
-  features: features,
-});
+const styleVariables = {
+  color: 'red',
+};
 
 const vectorLayer = new VectorLayer({
-  source: source,
+  source: new VectorSource({
+    features: features,
+  }),
+  variables: styleVariables,
+  style: styleKeys.map((key, index) => {
+    const rule = {
+      filter: ['==', ['get', 'shape'], key],
+      style: styles[key],
+    };
+    if (index > 0) {
+      rule.else = true;
+    }
+    return rule;
+  }),
 });
 
 const map = new Map({
@@ -134,9 +129,6 @@ const colors = ['blue', 'green', 'yellow', 'aqua', 'red'];
 let currentColor = 0;
 
 document.getElementById('color-changer').addEventListener('click', function () {
-  styles.square
-    .getImage()
-    .setFill(new Fill({color: colors[currentColor % colors.length]}));
+  styleVariables.color = colors[currentColor++ % colors.length];
   vectorLayer.changed();
-  currentColor++;
 });

@@ -66,12 +66,14 @@ function always(context) {
  * and pass a more complete evaluation context (variables, zoom, time, etc.).
  *
  * @param {Array<import('../../style/flat.js').Rule>} rules The rules.
+ * @param {Object} variables Style variables
  * @return {import('../../style/Style.js').StyleFunction} A style function.
  */
-export function rulesToStyleFunction(rules) {
+export function rulesToStyleFunction(rules, variables) {
   const parsingContext = newParsingContext();
   const evaluator = buildRuleSet(rules, parsingContext);
   const evaluationContext = newEvaluationContext();
+  evaluationContext.variables = variables;
   return function (feature, resolution) {
     evaluationContext.properties = feature.getPropertiesInternal();
     evaluationContext.resolution = resolution;
@@ -85,9 +87,10 @@ export function rulesToStyleFunction(rules) {
  * and pass a more complete evaluation context (variables, zoom, time, etc.).
  *
  * @param {Array<import('../../style/flat.js').FlatStyle>} flatStyles The flat styles.
+ * @param {Object} variables Style variables
  * @return {import('../../style/Style.js').StyleFunction} A style function.
  */
-export function flatStylesToStyleFunction(flatStyles) {
+export function flatStylesToStyleFunction(flatStyles, variables) {
   const parsingContext = newParsingContext();
   const length = flatStyles.length;
 
@@ -99,6 +102,7 @@ export function flatStylesToStyleFunction(flatStyles) {
     evaluators[i] = buildStyle(flatStyles[i], parsingContext);
   }
   const evaluationContext = newEvaluationContext();
+  evaluationContext.variables = variables;
 
   /**
    * @type {Array<Style>}

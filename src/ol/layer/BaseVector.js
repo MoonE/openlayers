@@ -64,6 +64,7 @@ import {
  * batches will be recreated when no animation is active.
  * @property {boolean} [updateWhileInteracting=false] When set to `true`, feature batches will
  * be recreated during interactions. See also `updateWhileAnimating`.
+ * @property {Object} [variables] Style variables.
  * @property {Object<string, *>} [properties] Arbitrary observable properties. Can be accessed with `#get()` and `#set()`.
  */
 
@@ -129,6 +130,12 @@ class BaseVectorLayer extends Layer {
      * @private
      */
     this.styleFunction_ = undefined;
+
+    /**
+     * @type {Object}
+     * @private
+     */
+    this.variables_ = options.variables || {};
 
     this.setStyle(options.style);
 
@@ -269,7 +276,7 @@ class BaseVectorLayer extends Layer {
    * @api
    */
   setStyle(style) {
-    this.style_ = toStyleLike(style);
+    this.style_ = toStyleLike(style, this.variables_);
     this.styleFunction_ =
       style === null ? undefined : toStyleFunction(this.style_);
     this.changed();
@@ -281,9 +288,10 @@ class BaseVectorLayer extends Layer {
  * styles, and arrays of rules are converted into style functions.
  *
  * @param {import("../style/Style.js").StyleLike|import("../style/flat.js").FlatStyleLike|null} [style] Layer style.
+ * @param {Object} [variables] Style variables.
  * @return {import("../style/Style.js").StyleLike|null} The style.
  */
-function toStyleLike(style) {
+function toStyleLike(style, variables) {
   if (style === undefined) {
     return createDefaultStyle;
   }
@@ -333,12 +341,12 @@ function toStyleLike(style) {
       }
       rules[i] = candidate;
     }
-    return rulesToStyleFunction(rules);
+    return rulesToStyleFunction(rules, variables);
   }
 
   const flatStyles =
     /** @type {Array<import("../style/flat.js").FlatStyle>} */ (style);
-  return flatStylesToStyleFunction(flatStyles);
+  return flatStylesToStyleFunction(flatStyles, variables);
 }
 
 export default BaseVectorLayer;
